@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import AuthInput from "@/components/ui/AuthInput";
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import TwoFactorAuthModal from "@/components/auth/TwoFactorAuthModal";
@@ -46,40 +47,39 @@ export default function LoginPage() {
   return (
     <>
       <main
-        className={`flex min-h-screen items-center justify-center bg-[#F8FAFC] px-4 transition ${
+        className={`flex min-h-screen items-center justify-center px-4 transition ${
           isTwoFactorOpen ? "blur-[2px]" : ""
         }`}
+        style={{
+          background:
+            "radial-gradient(circle at 12% 0%, rgba(0, 151, 178, 0.10), transparent 28%), linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%)",
+        }}
       >
-        <div className="w-full max-w-[410px]">
-          <div className="mx-auto mb-4 hidden h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-xs text-slate-500">
-            Logo
-          </div>
+        <div className="w-full max-w-[380px]">
+          <div className="mb-[62px] text-center">
+            <div className="mx-auto mb-[14px] flex justify-center">
+              <Image
+                src="/images/logo.png"
+                alt="DMS Logo"
+                width={62}
+                height={40}
+                priority
+                className="h-auto w-[62px]"
+              />
+            </div>
 
-          <div className="mb-[18px] text-center">
-            <h1 className="text-[20px] font-semibold leading-none text-[#111827]">
-              DMS
-            </h1>
-            <p className="mt-[10px] text-[12px] text-[#64748B]">
-              Document Management System
+            <p className="text-[12px] text-[#64748B]">
+              Legal Practice Management Portal
             </p>
           </div>
 
-          <section className="rounded-[9px] border border-[#E2E8F0] bg-white px-[30px] py-[28px] shadow-sm">
-            <div className="mb-[24px]">
-              <h2 className="text-[17px] font-semibold text-[#111827]">
-                Welcome back
-              </h2>
-              <p className="mt-[8px] text-[13px] text-[#64748B]">
-                Sign in to your account
-              </p>
-            </div>
-
+          <section className="rounded-[9px] border border-[#E2E8F0] bg-white px-[26px] py-[28px] shadow-sm">
             <form onSubmit={handleSubmit}>
               <div className="space-y-[18px]">
                 <AuthInput
-                  label="Email"
+                  label="Email Address"
                   type="email"
-                  placeholder="admin@dms.com"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onBlur={() =>
@@ -122,17 +122,17 @@ export default function LoginPage() {
               </div>
 
               <div className="mt-[15px] flex items-center justify-between">
-                <label className="flex items-center gap-[8px] text-[13px] text-[#475569]">
+                <label className="flex items-center gap-[8px] text-[12px] text-[#64748B]">
                   <input
                     type="checkbox"
-                    className="h-[13px] w-[13px] rounded border-[#CBD5E1] accent-[#2563EB]"
+                    className="h-[12px] w-[12px] rounded border-[#CBD5E1] accent-[#0097B2]"
                   />
                   Remember me
                 </label>
 
                 <button
                   type="button"
-                  className="text-[13px] font-medium text-[#2563EB] hover:underline"
+                  className="text-[12px] font-medium text-[#0097B2] hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -147,7 +147,7 @@ export default function LoginPage() {
           </section>
 
           <p className="mt-[24px] text-center text-[11px] text-[#94A3B8]">
-            Document Management System - Secure Access Only
+            Authorized personnel only · DMS Document Management System
           </p>
         </div>
       </main>

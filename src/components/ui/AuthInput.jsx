@@ -11,7 +11,7 @@ export default function AuthInput({
 }) {
   return (
     <div>
-      <label className="mb-[8px] block text-[13px] font-medium text-[#111827]">
+      <label className="mb-[8px] block text-[12px] font-medium text-[#334155]">
         {label}
       </label>
 
@@ -31,7 +31,7 @@ export default function AuthInput({
           className={`h-[38px] w-full rounded-[6px] border bg-[#F8FAFC] pl-[42px] pr-[42px] text-[13px] text-[#111827] outline-none placeholder:text-[#94A3B8] focus:bg-white focus:ring-2 ${
             error
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
-              : "border-[#E2E8F0] focus:border-[#2563EB] focus:ring-[#2563EB]/10"
+              : "border-[#E2E8F0] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
           }`}
         />
 

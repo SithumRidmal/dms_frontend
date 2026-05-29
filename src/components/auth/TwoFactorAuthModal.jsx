@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { TWO_FACTOR_AUTH_COUNTDOWN_SECONDS } from "@/lib/constants";
 import PrimaryButton from "@/components/ui/PrimaryButton";
@@ -116,10 +117,33 @@ export default function TwoFactorAuthModal({ isOpen, onClose, email }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#F8FAFC]/70 px-4 backdrop-blur-[3px]">
+    <div
+      className="fixed inset-0 z-50 flex min-h-screen items-center justify-center px-4"
+      style={{
+        background:
+          "radial-gradient(circle at 12% 0%, rgba(0, 151, 178, 0.10), transparent 28%), linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%)",
+      }}
+    >
       <div className="w-full max-w-[410px]">
+        <div className="mb-[24px] text-center">
+          <div className="mx-auto mb-[14px] flex justify-center">
+            <Image
+              src="/images/logo.png"
+              alt="DMS Logo"
+              width={62}
+              height={40}
+              priority
+              className="h-auto w-[62px]"
+            />
+          </div>
+
+          <p className="text-[12px] text-[#64748B]">
+            Legal Practice Management Portal
+          </p>
+        </div>
+
         <section className="rounded-[9px] border border-[#E2E8F0] bg-white px-[44px] py-[34px] text-center shadow-sm">
-          <div className="mx-auto mb-[18px] flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#EFF6FF]">
+          <div className="mx-auto mb-[18px] flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#E6F7FA]">
             <ShieldIcon />
           </div>
 
@@ -145,7 +169,7 @@ export default function TwoFactorAuthModal({ isOpen, onClose, email }) {
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className="h-[54px] w-[42px] rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] text-center text-[18px] font-medium text-[#111827] outline-none transition focus:border-[#2563EB] focus:bg-white focus:ring-2 focus:ring-[#2563EB]/10"
+                className="h-[54px] w-[42px] rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] text-center text-[18px] font-medium text-[#111827] outline-none transition focus:border-[#0097B2] focus:bg-white focus:ring-2 focus:ring-[#0097B2]/10"
               />
             ))}
           </div>
@@ -155,7 +179,7 @@ export default function TwoFactorAuthModal({ isOpen, onClose, email }) {
               type="checkbox"
               checked={trustDevice}
               onChange={(e) => setTrustDevice(e.target.checked)}
-              className="h-[13px] w-[13px] rounded border-[#CBD5E1] accent-[#2563EB]"
+              className="h-[13px] w-[13px] rounded border-[#CBD5E1] accent-[#0097B2]"
             />
             Trust this device for 30 days
           </label>
@@ -177,6 +201,10 @@ export default function TwoFactorAuthModal({ isOpen, onClose, email }) {
             )}
           </div>
         </section>
+
+        <p className="mt-[24px] text-center text-[11px] text-[#94A3B8]">
+          Authorized personnel only · DMS Document Management System
+        </p>
       </div>
     </div>
   );
@@ -189,7 +217,7 @@ function ShieldIcon() {
       height="15"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#2563EB"
+      stroke="#0097B2"
       strokeWidth="1.9"
       strokeLinecap="round"
       strokeLinejoin="round"
