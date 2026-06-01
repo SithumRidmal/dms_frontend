@@ -1,31 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const MIN_ZOOM = 0.7;
-const MAX_ZOOM = 1.5;
+const MAX_ZOOM = 1.8;
 const ZOOM_STEP = 0.1;
+
+const PDF_BASE_WIDTH = 520;
+const PDF_BASE_HEIGHT = 760;
 
 export default function SubpoenaPreviewContent({ file }) {
   const [fileUrl, setFileUrl] = useState("");
   const [pageCount, setPageCount] = useState(null);
   const [zoom, setZoom] = useState(1);
 
+  const isPdf = useMemo(() => {
+    if (!file) return false;
+
+    const fileName = file.name?.toLowerCase() || "";
+    const fileType = file.type || "";
+
+    return fileType === "application/pdf" || fileName.endsWith(".pdf");
+  }, [file]);
+
   useEffect(() => {
-    if (!file) return;
+    if (!file) {
+      setFileUrl("");
+      setPageCount(null);
+      setZoom(1);
+      return;
+    }
 
     const objectUrl = URL.createObjectURL(file);
+
     setFileUrl(objectUrl);
     setZoom(1);
+    setPageCount(null);
 
-    detectPdfPageCount(file).then((count) => {
-      setPageCount(count);
-    });
+    if (isPdf) {
+      detectPdfPageCount(file).then((count) => {
+        setPageCount(count);
+      });
+    }
 
     return () => {
       URL.revokeObjectURL(objectUrl);
     };
-  }, [file]);
+  }, [file, isPdf]);
 
   const handleZoomIn = () => {
     setZoom((prev) => Number(Math.min(MAX_ZOOM, prev + ZOOM_STEP).toFixed(2)));
@@ -35,6 +56,10 @@ export default function SubpoenaPreviewContent({ file }) {
     setZoom((prev) => Number(Math.max(MIN_ZOOM, prev - ZOOM_STEP).toFixed(2)));
   };
 
+  const handleResetZoom = () => {
+    setZoom(1);
+  };
+
   if (!file) {
     return (
       <div className="flex h-full min-h-[480px] items-center justify-center rounded-[8px] border border-dashed border-[#CBD5E1] bg-[#F8FAFC] px-4 text-center text-[12px] text-[#94A3B8]">
@@ -42,8 +67,6 @@ export default function SubpoenaPreviewContent({ file }) {
       </div>
     );
   }
-
-  const isPdf = file.type === "application/pdf";
 
   return (
     <div className="flex h-full min-h-[520px] flex-col overflow-hidden">
@@ -57,6 +80,7 @@ export default function SubpoenaPreviewContent({ file }) {
             <p className="truncate text-[12px] font-semibold text-[#111827]">
               {file.name}
             </p>
+
             <p className="mt-[2px] text-[11px] text-[#94A3B8]">
               {pageCount ? `${pageCount} pages` : "PDF preview"} ·{" "}
               {formatFileSize(file.size)}
@@ -77,6 +101,15 @@ export default function SubpoenaPreviewContent({ file }) {
 
           <button
             type="button"
+            onClick={handleResetZoom}
+            className="h-[28px] min-w-[46px] rounded-[6px] px-2 text-[11px] font-semibold text-[#334155] hover:bg-white"
+            title="Reset zoom"
+          >
+            {Math.round(zoom * 100)}%
+          </button>
+
+          <button
+            type="button"
             onClick={handleZoomIn}
             disabled={zoom >= MAX_ZOOM}
             className="flex h-[28px] w-[28px] items-center justify-center rounded-[6px] hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
@@ -90,20 +123,26 @@ export default function SubpoenaPreviewContent({ file }) {
       <div className="min-h-0 flex-1 overflow-auto rounded-[8px] border border-[#E2E8F0] bg-[#F8FAFC] p-4">
         {isPdf && fileUrl ? (
           <div
-            className="mx-auto transition-transform"
+            className="mx-auto"
             style={{
-              width: `${100 * zoom}%`,
-              minWidth: "320px",
+              width: `${PDF_BASE_WIDTH * zoom}px`,
+              height: `${PDF_BASE_HEIGHT * zoom}px`,
             }}
           >
             <iframe
+              key={fileUrl}
               src={`${fileUrl}#toolbar=0&navpanes=0&scrollbar=1`}
               title={file.name}
-              className="h-[720px] w-full rounded-[4px] border border-[#CBD5E1] bg-white"
+              className="origin-top-left rounded-[4px] border border-[#CBD5E1] bg-white shadow-sm"
+              style={{
+                width: `${PDF_BASE_WIDTH}px`,
+                height: `${PDF_BASE_HEIGHT}px`,
+                transform: `scale(${zoom})`,
+              }}
             />
           </div>
         ) : (
-          <div className="flex h-full min-h-[420px] items-center justify-center text-center text-[12px] text-[#94A3B8]">
+          <div className="flex h-full min-h-[420px] items-center justify-center rounded-[8px] border border-dashed border-[#CBD5E1] bg-white px-4 text-center text-[12px] text-[#94A3B8]">
             Only PDF subpoenas can be previewed here.
           </div>
         )}
@@ -114,7 +153,12 @@ export default function SubpoenaPreviewContent({ file }) {
 
 async function detectPdfPageCount(file) {
   try {
-    if (file.type !== "application/pdf") return null;
+    const fileName = file.name?.toLowerCase() || "";
+    const fileType = file.type || "";
+
+    if (fileType !== "application/pdf" && !fileName.endsWith(".pdf")) {
+      return null;
+    }
 
     const buffer = await file.arrayBuffer();
     const text = new TextDecoder("latin1").decode(buffer);
