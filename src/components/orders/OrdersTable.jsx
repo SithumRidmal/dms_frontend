@@ -1,290 +1,349 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import OrderStatusBadge from "@/components/orders/OrderStatusBadge";
+import Link from "next/link";
+import CreateInvoiceModal from "@/components/orders/CreateInvoiceModal";
+
+const ORDERS_PER_PAGE = 6;
 
 const orders = [
   {
-    id: "ORD-2026-001",
-    case: "Smith vs. Johnson Property Dispute",
-    status: "Active",
-    invoice: "INV 001",
-    record: "INV 002",
-    company: "Smith & Associates",
-    dob: "03/15/1982",
-    ssn: "****-****-1234",
-    forms: ["H04", "D-253A"],
+    id: "70656-1",
+    note: true,
+    subpoena: true,
+    court: "WCAB",
+    applicant: "Carlos Rivera",
+    orderRef: "Ord #W-27285-3",
+    status: [
+      { label: "Review Records", type: "green" },
+      { label: "Serve", type: "green" },
+      { label: "Custodian", type: "red" },
+      { label: "SENT", type: "check" },
+    ],
+    invoice: {
+      reviewDate: "05/25",
+      reviewAmount: "$285.00",
+      printAmount: "$15.00",
+      custodianAmount: "$20.00",
+      sentDate: "05/26",
+      showXray: true,
+      showEmail: true,
+    },
+    records: {
+      title: "Medical Records",
+      lines: ["ANY N ALL", "04/01/2015 - Present"],
+      links: ["Printed/Sent Out Note", "CNR Note"],
+    },
+    company: {
+      name: "CITYWIDE SCANNING SERVICES, Inc.",
+      address: "3010 WILSHIRE BLVD SUITE 22, Los Angeles",
+      phone: "Phone 213-353-0500 | Fax 213-677-5238",
+      email: "Email: records@citywidescanning.com",
+    },
+    dobSsn: ["04/01/93", "06/01/24", "02/04/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-002",
-    case: "Martinez Immigration Appeal",
-    status: "No Subpoena",
-    invoice: "INV 003",
-    record: "",
-    company: "Martinez Legal Group",
-    dob: "07/22/1975",
-    ssn: "****-****-5678",
-    forms: ["H130", "H485"],
+    id: "6443-1",
+    note: true,
+    subpoena: true,
+    court: "WCAB",
+    applicant: "Carlos Eduardo Diaz",
+    orderRef: "Ord #REC-1630864",
+    status: [
+      { label: "Review Records", type: "green" },
+      { label: "Serve", type: "green" },
+      { label: "Custodian", type: "green" },
+      { label: "SENT", type: "check" },
+    ],
+    invoice: {
+      reviewDate: "06/10",
+      reviewAmount: "$15.00",
+      printAmount: "$24.90",
+      custodianAmount: "$6.25",
+      sentDate: "06/26",
+      paid: true,
+    },
+    records: {
+      title: "Medical Records",
+      lines: ["ANY N ALL, FROM", "04/23/2015 - Present"],
+      links: ["Printed/Sent Out Note", "CNR Note"],
+    },
+    company: {
+      name: "GEMINI",
+      address: "250 TECHNOLOGY WAY, ROCKLIN, Rocklin",
+      phone: "Phone 877-739-7481 | Fax 707-204-8527",
+      email: "Email: records@geminilegal.com",
+    },
+    dobSsn: ["07/13/70", "03/29/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Send CNR L",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-003",
-    case: "Chen Business Formation",
-    status: "Ready to Pickup",
-    invoice: "INV 004",
-    record: "INV 005",
-    company: "Pacific Law Partners",
-    dob: "11/08/1990",
-    ssn: "****-****-9812",
-    forms: ["S14", "253"],
+    id: "65322-1",
+    note: true,
+    subpoena: false,
+    court: "WCAB",
+    applicant: "Christian Lopez",
+    orderRef: "Ord #REC-1540811",
+    status: [
+      { label: "Review Records", type: "green" },
+      { label: "Serve", type: "green" },
+      { label: "Custodian", type: "green" },
+      { label: "SENT", type: "check" },
+    ],
+    invoice: {
+      reviewDate: "07/11",
+      reviewAmount: "$15.00",
+      printAmount: "$20.00",
+      custodianAmount: "$20.00",
+      sentDate: "07/11/25",
+      showXray: true,
+      paid: true,
+    },
+    records: {
+      title: "Medical Records",
+      lines: ["ANY N ALL FROM", "05/21/2015 - Present"],
+      links: ["Printed/Sent Out Note", "CNR Note"],
+    },
+    company: {
+      name: "Gemini Legal Support, Inc.",
+      address: "250 Technology Way, Rocklin",
+      phone: "Phone 877-739-7481 | Fax 626-966-9975",
+      email: "Email: records@gemini.Legal",
+    },
+    dobSsn: ["11/22/1944", "04/10/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-004",
-    case: "Williams Criminal Defense",
-    status: "Active",
-    invoice: "INV 007",
-    record: "",
-    company: "Williams & Co.",
-    dob: "05/30/1988",
-    ssn: "****-****-3456",
-    forms: ["D-253", "D-28"],
+    id: "70123-2",
+    note: true,
+    subpoena: false,
+    court: "",
+    applicant: "Maria Hernandez",
+    orderRef: "Ord #REC-187679",
+    status: [
+      { label: "Review Records", type: "red" },
+      { label: "Serve", type: "red" },
+      { label: "Custodian", type: "red" },
+    ],
+    invoice: {
+      createOnly: true,
+    },
+    records: {
+      title: "Medical Records",
+      lines: ["ANY N ALL", "01/15/2020 - Present"],
+      links: ["Upload Subpoena"],
+    },
+    company: {
+      name: "Adventist Health",
+      address: "1500 Chevy Chase Dr, Glendale, CA 91206",
+      phone: "Phone 818-409-8000 | Fax 818-409-8010",
+      email: "Email: records@adventisthealth.org",
+    },
+    dobSsn: ["03/22/1985", "04/01/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-005",
-    case: "Brown Estate Planning",
-    status: "Completed",
-    invoice: "INV 008",
-    record: "INV 009",
-    company: "Brown Family Trust",
-    dob: "04/12/1955",
-    ssn: "****-****-7898",
-    forms: ["700", "729"],
+    id: "7157-1",
+    note: true,
+    subpoena: false,
+    court: "",
+    applicant: "Robert Kim",
+    orderRef: "Ord #W-28934-1",
+    status: [
+      { label: "Review Records", type: "green" },
+      { label: "Serve", type: "green" },
+      { label: "Custodian", type: "red" },
+      { label: "SENT", type: "check" },
+    ],
+    invoice: {
+      reviewDate: "04/20",
+      reviewAmount: "$45.00",
+      printAmount: "$15.00",
+      sentDate: "04/20/25",
+      showXray: true,
+      paid: true,
+    },
+    records: {
+      title: "Medical Records",
+      lines: ["ANY N ALL", "06/01/2018 - Present"],
+      links: ["Printed/Sent Out Note"],
+    },
+    company: {
+      name: "Cedars-Sinai Medical Center",
+      address: "8700 Beverly Blvd, Los Angeles, CA 90048",
+      phone: "Phone 310-423-3277 | Fax 310-423-3272",
+      email: "Email: records@cedars-sinai.edu",
+    },
+    dobSsn: ["09/12/1978", "05/15/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-006",
-    case: "Davis Personal Injury Claim",
-    status: "Ready",
-    invoice: "INV 010",
-    record: "",
-    company: "Davis Law Firm",
-    dob: "01/26/1973",
-    ssn: "****-****-2345",
-    forms: ["H599", "D-253C"],
+    id: "7289-3",
+    note: true,
+    subpoena: false,
+    court: "",
+    applicant: "Jennifer Martinez",
+    orderRef: "Ord #REC-1923456",
+    status: [
+      { label: "Review Records", type: "red" },
+      { label: "Serve", type: "green" },
+      { label: "Custodian", type: "red" },
+    ],
+    invoice: {
+      createOnly: true,
+    },
+    records: {
+      title: "Medical Records",
+      lines: ["ANY N ALL", "03/10/2019 - Present"],
+      links: ["Review Subpoena"],
+    },
+    company: {
+      name: "Children's Hospital Los Angeles",
+      address: "4650 Sunset Blvd, Los Angeles, CA 90027",
+      phone: "Phone 323-660-2450 | Fax 323-660-2451",
+      email: "Email: roi@chla.usc.edu",
+    },
+    dobSsn: ["02/14/2010", "06/20/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-007",
-    case: "Rodriguez Divorce Settlement",
-    status: "Cancelled",
-    invoice: "INV 011",
-    record: "",
-    company: "Rodriguez & Partners",
-    dob: "04/17/1980",
-    ssn: "****-****-6789",
-    forms: ["D854", "H485"],
+    id: "7310-1",
+    note: true,
+    subpoena: true,
+    court: "WCAB",
+    applicant: "Angela Foster",
+    orderRef: "Ord #W-1938482",
+    status: [
+      { label: "Review Records", type: "green" },
+      { label: "Serve", type: "green" },
+      { label: "Custodian", type: "green" },
+      { label: "SENT", type: "check" },
+    ],
+    invoice: {
+      reviewDate: "06/02",
+      reviewAmount: "$75.00",
+      printAmount: "$15.00",
+      custodianAmount: "$25.00",
+      sentDate: "06/03/25",
+      showEmail: true,
+    },
+    records: {
+      title: "Billing Records",
+      lines: ["ALL BILLING", "01/01/2020 - Present"],
+      links: ["Printed/Sent Out Note", "CNR Note"],
+    },
+    company: {
+      name: "Pacific Diagnostic Center",
+      address: "8900 Sunset Blvd, Floor 4, West Hollywood",
+      phone: "Phone 310-553-2400 | Fax 310-553-2401",
+      email: "Email: records@pacificdiagnostic.com",
+    },
+    dobSsn: ["05/20/82", "06/02/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Called",
+      "Edit Order",
+    ],
   },
   {
-    id: "ORD-2026-008",
-    case: "Thompson Contract Dispute",
-    status: "No Records",
-    invoice: "INV 012",
-    record: "INV 013",
-    company: "Thompson Industries",
-    dob: "08/03/1977",
-    ssn: "****-****-0123",
-    forms: ["P56", "H4"],
-  },
-  {
-    id: "ORD-2026-009",
-    case: "Garcia Employment Litigation",
-    status: "Active",
-    invoice: "INV 014",
-    record: "",
-    company: "Garcia Legal Services",
-    dob: "12/20/1985",
-    ssn: "****-****-4567",
-    forms: ["H9", "W4"],
-  },
-  {
-    id: "ORD-2026-010",
-    case: "Lee Intellectual Property Filing",
-    status: "Write Offs",
-    invoice: "INV 015",
-    record: "",
-    company: "Lee Tech Holdings",
-    dob: "09/11/1995",
-    ssn: "****-****-8901",
-    forms: ["H29", "ITA 0035"],
-  },
-  {
-    id: "ORD-2026-011",
-    case: "Anderson Tax Audit Defense",
-    status: "Ready to Pickup",
-    invoice: "INV 017",
-    record: "",
-    company: "Anderson Accounting",
-    dob: "02/03/1978",
-    ssn: "****-****-3457",
-    forms: ["248", "R21"],
-  },
-  {
-    id: "ORD-2026-012",
-    case: "Taylor Bankruptcy Filing",
-    status: "No Subpoena",
-    invoice: "INV 018",
-    record: "INV 019",
-    company: "Taylor Financial Group",
-    dob: "10/05/1983",
-    ssn: "****-****-7891",
-    forms: ["F213", "H-485"],
-  },
-  {
-    id: "ORD-2026-013",
-    case: "Walker Insurance Claim",
-    status: "Active",
-    invoice: "INV 020",
-    record: "",
-    company: "Walker Legal",
-    dob: "06/11/1984",
-    ssn: "****-****-1191",
-    forms: ["H04"],
-  },
-  {
-    id: "ORD-2026-014",
-    case: "Hall Civil Litigation",
-    status: "Ready",
-    invoice: "INV 021",
-    record: "",
-    company: "Hall Associates",
-    dob: "05/19/1972",
-    ssn: "****-****-2210",
-    forms: ["D-253A"],
-  },
-  {
-    id: "ORD-2026-015",
-    case: "Young Family Custody Review",
-    status: "Completed",
-    invoice: "INV 022",
-    record: "INV 023",
-    company: "Young Family Law",
-    dob: "03/07/1989",
-    ssn: "****-****-3128",
-    forms: ["H130", "D-28"],
-  },
-  {
-    id: "ORD-2026-016",
-    case: "King Corporate Merger Filing",
-    status: "Active",
-    invoice: "INV 024",
-    record: "",
-    company: "King Corporate Counsel",
-    dob: "08/28/1979",
-    ssn: "****-****-4455",
-    forms: ["S14", "H04"],
-  },
-  {
-    id: "ORD-2026-017",
-    case: "Wright Real Estate Closing",
-    status: "Ready to Pickup",
-    invoice: "INV 025",
-    record: "INV 026",
-    company: "Wright Property Group",
-    dob: "01/14/1968",
-    ssn: "****-****-7782",
-    forms: ["700", "253"],
-  },
-  {
-    id: "ORD-2026-018",
-    case: "Lopez Workplace Injury Claim",
-    status: "No Records",
-    invoice: "INV 027",
-    record: "",
-    company: "Lopez Legal Office",
-    dob: "06/23/1991",
-    ssn: "****-****-6099",
-    forms: ["H599", "D-253C"],
-  },
-  {
-    id: "ORD-2026-019",
-    case: "Scott Medical Records Request",
-    status: "No Subpoena",
-    invoice: "INV 028",
-    record: "",
-    company: "Scott & Partners",
-    dob: "09/18/1981",
-    ssn: "****-****-2301",
-    forms: ["H485", "H04"],
-  },
-  {
-    id: "ORD-2026-020",
-    case: "Adams Probate Documentation",
-    status: "Ready",
-    invoice: "INV 029",
-    record: "INV 030",
-    company: "Adams Estate Services",
-    dob: "02/27/1959",
-    ssn: "****-****-8841",
-    forms: ["729", "700"],
-  },
-  {
-    id: "ORD-2026-021",
-    case: "Baker Contract Review",
-    status: "Active",
-    invoice: "INV 031",
-    record: "",
-    company: "Baker Legal Group",
-    dob: "12/09/1976",
-    ssn: "****-****-1408",
-    forms: ["P56", "W4"],
-  },
-  {
-    id: "ORD-2026-022",
-    case: "Nelson Civil Rights Complaint",
-    status: "Cancelled",
-    invoice: "INV 032",
-    record: "",
-    company: "Nelson Justice Law",
-    dob: "04/04/1992",
-    ssn: "****-****-6635",
-    forms: ["D854", "R21"],
-  },
-  {
-    id: "ORD-2026-023",
-    case: "Carter Business License Filing",
-    status: "Completed",
-    invoice: "INV 033",
-    record: "INV 034",
-    company: "Carter Business Services",
-    dob: "07/16/1987",
-    ssn: "****-****-4712",
-    forms: ["S14", "ITA 0035"],
-  },
-  {
-    id: "ORD-2026-024",
-    case: "Mitchell Divorce Mediation",
-    status: "Ready to Pickup",
-    invoice: "INV 035",
-    record: "",
-    company: "Mitchell Family Law",
-    dob: "11/29/1984",
-    ssn: "****-****-9024",
-    forms: ["H485", "D-28"],
-  },
-  {
-    id: "ORD-2026-025",
-    case: "Perez Immigration Document Review",
-    status: "Write Offs",
-    invoice: "INV 036",
-    record: "INV 037",
-    company: "Perez Immigration Counsel",
-    dob: "05/13/1994",
-    ssn: "****-****-3570",
-    forms: ["H130", "H9"],
+    id: "7422-4",
+    note: true,
+    subpoena: false,
+    court: "",
+    applicant: "Michael Brooks",
+    orderRef: "Ord #REC-1945520",
+    status: [
+      { label: "Review Records", type: "green" },
+      { label: "Serve", type: "red" },
+      { label: "Custodian", type: "green" },
+    ],
+    invoice: {
+      reviewDate: "05/18",
+      reviewAmount: "$95.00",
+      printAmount: "$20.00",
+      sentDate: "05/19/25",
+      paid: true,
+    },
+    records: {
+      title: "X-Ray Films",
+      lines: ["ANY N ALL", "02/01/2017 - Present"],
+      links: ["Printed/Sent Out Note", "CNR Note"],
+    },
+    company: {
+      name: "UCLA Health",
+      address: "10833 Le Conte Ave, Los Angeles, CA 90095",
+      phone: "Phone 310-825-9111 | Fax 310-825-9820",
+      email: "Email: records@uclahealth.org",
+    },
+    dobSsn: ["09/12/78", "05/15/25"],
+    forms: [
+      "Send Copy/Letter",
+      "Copy Center",
+      "Certification",
+      "Records",
+      "CNR",
+      "Called",
+      "Edit Order",
+    ],
   },
 ];
 
-const ORDERS_PER_PAGE = 12;
-
 export default function OrdersTable() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
 
   const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
 
@@ -293,159 +352,318 @@ export default function OrdersTable() {
     return orders.slice(startIndex, startIndex + ORDERS_PER_PAGE);
   }, [currentPage]);
 
+  const startRecord = (currentPage - 1) * ORDERS_PER_PAGE + 1;
+  const endRecord = Math.min(currentPage * ORDERS_PER_PAGE, orders.length);
+
+  const goToPreviousPage = () => {
+    setCurrentPage((page) => Math.max(page - 1, 1));
+  };
+
+  const goToNextPage = () => {
+    setCurrentPage((page) => Math.min(page + 1, totalPages));
+  };
+
   return (
-    <section className="flex min-h-[420px] flex-1 flex-col overflow-hidden rounded-[9px] border border-[#E2E8F0] bg-white shadow-sm">
-      <div className="flex flex-col gap-2 border-b border-[#F1F5F9] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-[13px] font-semibold text-[#111827]">
-          All Orders
-        </h2>
+    <>
+      <section className="flex min-h-[520px] flex-1 flex-col overflow-hidden rounded-[9px] border border-[#E2E8F0] bg-white shadow-sm">
+        <div className="flex flex-col gap-2 border-b border-[#F1F5F9] px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-[13px] font-semibold text-[#111827]">
+            All Orders
+          </h2>
 
-        <p className="text-[11px] text-[#94A3B8]">
-          Last updated: 5/29/2026
-        </p>
-      </div>
+          <p className="text-[11px] text-[#94A3B8]">Last updated: 6/2/2026</p>
+        </div>
 
-      <div className="min-h-0 flex-1 overflow-auto px-4">
-        <table className="w-full min-w-[1050px] border-collapse">
-          <thead className="sticky top-0 z-10 bg-white">
-            <tr className="border-b border-[#F1F5F9] text-left text-[11px] font-medium text-[#64748B]">
-              <th className="py-[11px] pr-4">Order ID</th>
-              <th className="py-[11px] pr-4">Case</th>
-              <th className="py-[11px] pr-4">Status</th>
-              <th className="py-[11px] pr-4">Invoice Records</th>
-              <th className="py-[11px] pr-4">Company</th>
-              <th className="py-[11px] pr-4">DOB / SSN</th>
-              <th className="py-[11px] pr-4">Forms</th>
-              <th className="py-[11px] text-right">Actions</th>
-            </tr>
-          </thead>
+        <div className="min-h-0 flex-1 overflow-auto">
+          <table className="w-full min-w-[1280px] border-collapse">
+            <thead className="sticky top-0 z-10 bg-white">
+              <tr className="border-b border-[#F1F5F9] text-left text-[11px] font-semibold text-[#64748B]">
+                <th className="w-[90px] px-4 py-3">ID</th>
+                <th className="w-[150px] px-4 py-3">Case</th>
+                <th className="w-[125px] px-4 py-3">Status</th>
+                <th className="w-[170px] px-4 py-3">Invoice</th>
+                <th className="w-[170px] px-4 py-3">Records</th>
+                <th className="w-[280px] px-4 py-3">Company</th>
+                <th className="w-[95px] px-4 py-3">DOB/SSN</th>
+                <th className="w-[130px] px-4 py-3">Forms</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            {currentOrders.map((order) => (
-              <tr
-                key={order.id}
-                className="border-b border-[#F8FAFC] text-[12px] text-[#334155]"
-              >
-                <td className="whitespace-nowrap py-[10px] pr-4">
-                  <span className="rounded-[4px] bg-[#DDF6FA] px-[7px] py-[3px] text-[11px] font-semibold text-[#007F96]">
-                    {order.id}
-                  </span>
-                </td>
+            <tbody>
+              {currentOrders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="border-b border-[#F1F5F9] text-[11px] text-[#334155] last:border-b-0 hover:bg-[#F8FBFC]"
+                >
+                  <td className="px-4 py-5 align-top">
+                    <Link
+                      href="/orders/new"
+                      className="font-semibold text-[#007F96] hover:underline"
+                    >
+                      {order.id}
+                    </Link>
 
-                <td className="max-w-[230px] truncate py-[10px] pr-4">
-                  {order.case}
-                </td>
+                    {order.note && (
+                      <button
+                        type="button"
+                        className="mt-1 block text-[10px] text-[#007F96] underline"
+                      >
+                        Note
+                      </button>
+                    )}
 
-                <td className="whitespace-nowrap py-[10px] pr-4">
-                  <OrderStatusBadge status={order.status} />
-                </td>
-
-                <td className="whitespace-nowrap py-[10px] pr-4">
-                  <div className="space-y-[4px]">
-                    <p className="w-fit rounded bg-[#F1F5F9] px-[6px] py-[2px] text-[10px] text-[#64748B]">
-                      {order.invoice}
-                    </p>
-                    {order.record && (
-                      <p className="w-fit rounded bg-[#F1F5F9] px-[6px] py-[2px] text-[10px] text-[#64748B]">
-                        {order.record}
+                    {order.subpoena && (
+                      <p className="mt-1 text-[10px] font-semibold text-[#059669]">
+                        ✓ Subpoena
                       </p>
                     )}
-                  </div>
-                </td>
 
-                <td className="max-w-[180px] truncate py-[10px] pr-4 font-medium">
-                  {order.company}
-                </td>
+                    {order.court && (
+                      <p className="mt-1 text-[10px] font-semibold text-[#334155]">
+                        {order.court}
+                      </p>
+                    )}
+                  </td>
 
-                <td className="whitespace-nowrap py-[10px] pr-4">
-                  <p>{order.dob}</p>
-                  <p className="text-[#94A3B8]">{order.ssn}</p>
-                </td>
+                  <td className="px-4 py-5 align-top">
+                    <p className="font-semibold text-[#111827]">
+                      {order.applicant}
+                    </p>
 
-                <td className="whitespace-nowrap py-[10px] pr-4">
-                  <div className="flex flex-wrap gap-[4px]">
-                    {order.forms.map((form) => (
-                      <span
-                        key={form}
-                        className="rounded bg-[#F1F5F9] px-[6px] py-[2px] text-[10px] text-[#64748B]"
-                      >
-                        {form}
-                      </span>
-                    ))}
-                  </div>
-                </td>
+                    <p className="mt-1 text-[10px] text-[#64748B]">
+                      {order.orderRef}
+                    </p>
+                  </td>
 
-                <td className="whitespace-nowrap py-[10px] text-right">
-                  <div className="flex justify-end gap-3 text-[#94A3B8]">
-                    <button type="button" className="hover:text-[#0097B2]">
-                      <ViewIcon />
-                    </button>
-                    <button type="button" className="hover:text-[#0097B2]">
-                      <EditIcon />
-                    </button>
-                    <button type="button" className="hover:text-red-500">
-                      <DeleteIcon />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  <td className="px-4 py-5 align-top">
+                    <div className="space-y-1">
+                      {order.status.map((item) => (
+                        <StatusAction key={item.label} item={item} />
+                      ))}
+                    </div>
+                  </td>
 
-      <div className="flex flex-col gap-3 border-t border-[#F1F5F9] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[11px] text-[#64748B]">
-          Showing {currentOrders.length} of {orders.length} orders
-        </p>
+                  <td className="px-4 py-5 align-top">
+                    <InvoiceBlock
+                      invoice={order.invoice}
+                      onCreateInvoice={() => setSelectedInvoiceOrder(order)}
+                    />
+                  </td>
 
-        <div className="flex items-center gap-1">
-          {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-            (page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`flex h-[26px] min-w-[26px] items-center justify-center rounded-[5px] px-2 text-[11px] font-medium ${
-                  currentPage === page
-                    ? "bg-[#111827] text-white"
-                    : "border border-[#E2E8F0] bg-white text-[#334155] hover:bg-[#F8FAFC]"
-                }`}
-              >
-                {page}
-              </button>
-            )
-          )}
+                  <td className="px-4 py-5 align-top">
+                    <RecordsBlock records={order.records} />
+                  </td>
+
+                  <td className="px-4 py-5 align-top">
+                    <CompanyBlock company={order.company} />
+                  </td>
+
+                  <td className="px-4 py-5 align-top">
+                    <div className="space-y-1 text-[11px] text-[#334155]">
+                      {order.dobSsn.map((item) => (
+                        <p key={item}>{item}</p>
+                      ))}
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-5 align-top">
+                    <FormsList forms={order.forms} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </section>
+
+        <div className="flex flex-col gap-3 border-t border-[#F1F5F9] bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[11px] text-[#64748B]">
+            Showing {startRecord}-{endRecord} of {orders.length} orders
+          </p>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className="flex h-[28px] min-w-[28px] items-center justify-center rounded-[6px] border border-[#E2E8F0] bg-white px-2 text-[12px] text-[#64748B] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              ‹
+            </button>
+
+            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+              (page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`flex h-[28px] min-w-[28px] items-center justify-center rounded-[6px] px-2 text-[12px] font-semibold ${
+                    currentPage === page
+                      ? "bg-[#111827] text-white"
+                      : "border border-[#E2E8F0] bg-white text-[#334155] hover:bg-[#F8FAFC]"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+
+            <button
+              type="button"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="flex h-[28px] min-w-[28px] items-center justify-center rounded-[6px] border border-[#E2E8F0] bg-white px-2 text-[12px] text-[#64748B] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <CreateInvoiceModal
+        isOpen={Boolean(selectedInvoiceOrder)}
+        order={selectedInvoiceOrder}
+        onClose={() => setSelectedInvoiceOrder(null)}
+      />
+    </>
   );
 }
 
-function ViewIcon() {
+function StatusAction({ item }) {
+  const styles = {
+    green: "text-[#059669]",
+    red: "text-red-500",
+    check: "text-[#059669]",
+  };
+
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" stroke="currentColor" strokeWidth="1.7" />
-      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
+    <button
+      type="button"
+      className={`flex items-center gap-1 text-left text-[10px] font-semibold hover:underline ${
+        styles[item.type] || "text-[#64748B]"
+      }`}
+    >
+      {item.type === "check" ? (
+        <span className="text-[10px]">✓</span>
+      ) : (
+        <span
+          className={`h-[6px] w-[6px] rounded-full ${
+            item.type === "red" ? "bg-red-500" : "bg-[#10B981]"
+          }`}
+        />
+      )}
+
+      {item.label}
+    </button>
   );
 }
 
-function EditIcon() {
+function InvoiceBlock({ invoice, onCreateInvoice }) {
+  if (invoice.createOnly) {
+    return (
+      <button
+        type="button"
+        onClick={onCreateInvoice}
+        className="text-[10px] font-semibold text-[#007F96] underline"
+      >
+        Create Invoice
+      </button>
+    );
+  }
+
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-      <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
+    <div className="space-y-1 text-[10px]">
+      <p className="text-[#334155]">
+        <button type="button" className="text-[#007F96] underline">
+          Review Invoice
+        </button>{" "}
+        <span className="text-[#94A3B8]">{invoice.reviewDate}</span>{" "}
+        <span className="text-[#111827]">{invoice.reviewAmount}</span>
+      </p>
+
+      <p className="text-[#334155]">
+        <button type="button" className="text-[#007F96] underline">
+          Print Invoice
+        </button>{" "}
+        <span>{invoice.printAmount}</span>
+      </p>
+
+      {invoice.custodianAmount && (
+        <p className="text-[#334155]">
+          Custodian{" "}
+          <span className="font-semibold">{invoice.custodianAmount}</span>
+        </p>
+      )}
+
+      {invoice.sentDate && (
+        <p className="font-semibold text-[#059669]">
+          ✓ SENT {invoice.sentDate}
+        </p>
+      )}
+
+      {invoice.showXray && (
+        <Link href="/orders/new" className="block text-[#007F96] underline">
+          Create Xray Invoice
+        </Link>
+      )}
+
+      {invoice.showEmail && (
+        <button type="button" className="block text-[#007F96] underline">
+          Email Invoice
+        </button>
+      )}
+
+      {invoice.paid && <p className="font-semibold text-[#059669]">Paid ✓</p>}
+    </div>
   );
 }
 
-function DeleteIcon() {
+function RecordsBlock({ records }) {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-      <path d="M4 7h16" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M6 7l1 14h10l1-14" stroke="currentColor" strokeWidth="1.7" />
-      <path d="M9 7V4h6v3" stroke="currentColor" strokeWidth="1.7" />
-    </svg>
+    <div className="space-y-1 text-[10px]">
+      <p className="font-semibold text-[#111827]">{records.title}</p>
+
+      {records.lines.map((line) => (
+        <p key={line} className="text-[#334155]">
+          {line}
+        </p>
+      ))}
+
+      {records.links.map((link) => (
+        <button
+          key={link}
+          type="button"
+          className="block text-left text-[#007F96] underline"
+        >
+          {link}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CompanyBlock({ company }) {
+  return (
+    <div className="space-y-1 text-[10px] leading-[15px]">
+      <p className="font-semibold text-[#007F96]">{company.name}</p>
+      <p className="text-[#334155]">{company.address}</p>
+      <p className="text-[#64748B]">{company.phone}</p>
+      <p className="text-[#64748B]">{company.email}</p>
+    </div>
+  );
+}
+
+function FormsList({ forms }) {
+  return (
+    <div className="space-y-1">
+      {forms.map((form) => (
+        <button
+          key={form}
+          type="button"
+          className="block text-left text-[10px] font-medium text-[#007F96] underline"
+        >
+          {form}
+        </button>
+      ))}
+    </div>
   );
 }
