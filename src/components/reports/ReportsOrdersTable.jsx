@@ -6,14 +6,15 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
       <div className="h-full max-h-[calc(100vh-225px)] overflow-auto">
         <table
           className={`w-full border-collapse ${
-            minimumColumns ? "min-w-[1050px]" : "min-w-[1900px]"
+            minimumColumns ? "min-w-[1050px]" : "min-w-[1880px]"
           }`}
         >
-          <thead className="sticky top-0 z-10 bg-white">
+          <thead className="sticky top-0 z-20 bg-white">
             <tr className="border-b border-[#E2E8F0] text-left text-[11px] font-semibold text-[#475569]">
               <th className="w-[40px] px-4 py-3">
                 <input type="checkbox" className="h-[13px] w-[13px]" />
               </th>
+
               <SortableHeader label="Order #" />
               <th className="w-[130px] px-4 py-3">Status</th>
               <th className="w-[120px] px-4 py-3">Invoice</th>
@@ -26,14 +27,18 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
                   <SortableHeader label="Case Number" />
                   <SortableHeader label="DOB" />
                   <SortableHeader label="SSN" />
-                  <th className="w-[230px] px-4 py-3">Provider on Subpoena</th>
-                  <th className="w-[190px] px-4 py-3">Records Requested</th>
+                  <th className="w-[220px] px-4 py-3">
+                    Provider on Subpoena
+                  </th>
+                  <th className="w-[185px] px-4 py-3">Records Requested</th>
                   <SortableHeader label="Doctor" />
-                  <th className="w-[210px] px-4 py-3">Address</th>
+                  <th className="w-[230px] px-4 py-3">Address</th>
                 </>
               )}
 
-              <th className="w-[90px] px-4 py-3">Rush</th>
+              <th className="sticky right-0 z-30 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-3 text-center shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)]">
+                Rush
+              </th>
             </tr>
           </thead>
 
@@ -41,7 +46,7 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
             {orders.map((order) => (
               <tr
                 key={order.id}
-                className="border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FBFC]"
+                className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FBFC]"
               >
                 <td className="px-4 py-6 align-middle">
                   <input type="checkbox" className="h-[13px] w-[13px]" />
@@ -54,6 +59,7 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
                   >
                     {order.orderNo}
                   </button>
+
                   <p className="mt-2 text-[10px] text-[#94A3B8]">
                     {order.subNo}
                   </p>
@@ -65,14 +71,14 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
 
                 <td className="px-4 py-6 align-middle">
                   {order.invoiced ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#059669]">
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#059669]">
                       <CheckIcon />
                       Invoiced
                     </span>
                   ) : (
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#007F96] hover:underline"
+                      className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#007F96] hover:underline"
                     >
                       <DocumentIcon />
                       Create Invoice
@@ -91,20 +97,17 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
                     <TableText>{order.provider}</TableText>
                     <TableText>{order.recordsRequested}</TableText>
                     <TableText>{order.doctor}</TableText>
+
                     <td className="px-4 py-6 align-middle text-[11px] leading-[16px] text-[#475569]">
-                      {order.address}
+                      <div className="max-w-[190px] break-words">
+                        {order.address}
+                      </div>
                     </td>
                   </>
                 )}
 
-                <td className="px-4 py-6 align-middle">
-                  {order.rush === "–" ? (
-                    <span className="text-[12px] text-[#94A3B8]">–</span>
-                  ) : (
-                    <span className="inline-flex h-[26px] items-center justify-center rounded-[5px] border border-[#FDBA74] bg-[#FFF7ED] px-3 text-[10px] font-semibold text-[#EA580C]">
-                      {order.rush}
-                    </span>
-                  )}
+                <td className="sticky right-0 z-10 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-6 text-center align-middle shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)] group-hover:bg-[#F8FBFC]">
+                  <RushBadge rush={order.rush} />
                 </td>
               </tr>
             ))}
@@ -123,6 +126,32 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
         </table>
       </div>
     </section>
+  );
+}
+
+function RushBadge({ rush }) {
+  if (!rush || rush === "–" || rush === "-") {
+    return (
+      <span className="inline-flex h-[28px] min-w-[72px] items-center justify-center rounded-[6px] px-3 text-[11px] font-semibold leading-none text-[#94A3B8]">
+        –
+      </span>
+    );
+  }
+
+  const styles = {
+    "Rush 1": "border-[#FDBA74] bg-[#FFF7ED] text-[#EA580C]",
+    "Rush 2": "border-[#FDBA74] bg-[#FFF7ED] text-[#EA580C]",
+    "Rush 3": "border-[#FCA5A5] bg-[#FEF2F2] text-[#DC2626]",
+  };
+
+  return (
+    <span
+      className={`inline-flex h-[28px] min-w-[78px] items-center justify-center whitespace-nowrap rounded-[6px] border px-4 text-[11px] font-semibold leading-none ${
+        styles[rush] || styles["Rush 1"]
+      }`}
+    >
+      {rush}
+    </span>
   );
 }
 
@@ -183,7 +212,7 @@ function TableText({ children }) {
 function SortableHeader({ label }) {
   return (
     <th className="w-[135px] px-4 py-3">
-      <span className="inline-flex items-center gap-1">
+      <span className="inline-flex items-center gap-1 whitespace-nowrap">
         {label}
         <span className="text-[9px] text-[#94A3B8]">↕</span>
       </span>
