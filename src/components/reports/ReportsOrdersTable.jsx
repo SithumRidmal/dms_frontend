@@ -1,131 +1,156 @@
 "use client";
 
+import { useState } from "react";
+import CreateInvoiceModal from "@/components/orders/CreateInvoiceModal";
+
 export default function ReportsOrdersTable({ orders, minimumColumns }) {
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
+
+  const handleOpenCreateInvoice = (order) => {
+    setSelectedInvoiceOrder({
+      id: order.orderNo,
+      court: "N/A",
+      applicant: order.applicant || "N/A",
+      company: {
+        name: order.provider || "N/A",
+      },
+    });
+  };
+
   return (
-    <section className="min-h-0 flex-1 overflow-hidden rounded-[10px] border border-[#E2E8F0] bg-white shadow-sm">
-      <div className="h-full max-h-[calc(100vh-225px)] overflow-auto">
-        <table
-          className={`w-full border-collapse ${
-            minimumColumns ? "min-w-[1050px]" : "min-w-[1880px]"
-          }`}
-        >
-          <thead className="sticky top-0 z-20 bg-white">
-            <tr className="border-b border-[#E2E8F0] text-left text-[11px] font-semibold text-[#475569]">
-              <th className="w-[40px] px-4 py-3">
-                <input type="checkbox" className="h-[13px] w-[13px]" />
-              </th>
-
-              <SortableHeader label="Order #" />
-              <th className="w-[130px] px-4 py-3">Status</th>
-              <th className="w-[120px] px-4 py-3">Invoice</th>
-
-              {!minimumColumns && (
-                <>
-                  <SortableHeader label="Subpoena Date" />
-                  <SortableHeader label="Date Served" />
-                  <SortableHeader label="Applicant" />
-                  <SortableHeader label="Case Number" />
-                  <SortableHeader label="DOB" />
-                  <SortableHeader label="SSN" />
-                  <th className="w-[220px] px-4 py-3">
-                    Provider on Subpoena
-                  </th>
-                  <th className="w-[185px] px-4 py-3">Records Requested</th>
-                  <SortableHeader label="Doctor" />
-                  <th className="w-[230px] px-4 py-3">Address</th>
-                </>
-              )}
-
-              <th className="sticky right-0 z-30 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-3 text-center shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)]">
-                Rush
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {orders.map((order) => (
-              <tr
-                key={order.id}
-                className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FBFC]"
-              >
-                <td className="px-4 py-6 align-middle">
+    <>
+      <section className="min-h-0 flex-1 overflow-hidden rounded-[10px] border border-[#E2E8F0] bg-white shadow-sm">
+        <div className="h-full max-h-[calc(100vh-225px)] overflow-auto">
+          <table
+            className={`w-full border-collapse ${
+              minimumColumns ? "min-w-[1050px]" : "min-w-[1880px]"
+            }`}
+          >
+            <thead className="sticky top-0 z-20 bg-white">
+              <tr className="border-b border-[#E2E8F0] text-left text-[11px] font-semibold text-[#475569]">
+                <th className="w-[40px] px-4 py-3">
                   <input type="checkbox" className="h-[13px] w-[13px]" />
-                </td>
+                </th>
 
-                <td className="px-4 py-6 align-middle">
-                  <button
-                    type="button"
-                    className="text-left text-[12px] font-semibold text-[#007F96] hover:underline"
-                  >
-                    {order.orderNo}
-                  </button>
-
-                  <p className="mt-2 text-[10px] text-[#94A3B8]">
-                    {order.subNo}
-                  </p>
-                </td>
-
-                <td className="px-4 py-6 align-top">
-                  <StatusBlock status={order.status} />
-                </td>
-
-                <td className="px-4 py-6 align-middle">
-                  {order.invoiced ? (
-                    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#059669]">
-                      <CheckIcon />
-                      Invoiced
-                    </span>
-                  ) : (
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#007F96] hover:underline"
-                    >
-                      <DocumentIcon />
-                      Create Invoice
-                    </button>
-                  )}
-                </td>
+                <SortableHeader label="Order #" />
+                <th className="w-[130px] px-4 py-3">Status</th>
+                <th className="w-[120px] px-4 py-3">Invoice</th>
 
                 {!minimumColumns && (
                   <>
-                    <TableText>{order.subpoenaDate}</TableText>
-                    <TableText>{order.dateServed}</TableText>
-                    <TableText>{order.applicant}</TableText>
-                    <TableText>{order.caseNumber}</TableText>
-                    <TableText>{order.dob}</TableText>
-                    <TableText>{order.ssn}</TableText>
-                    <TableText>{order.provider}</TableText>
-                    <TableText>{order.recordsRequested}</TableText>
-                    <TableText>{order.doctor}</TableText>
-
-                    <td className="px-4 py-6 align-middle text-[11px] leading-[16px] text-[#475569]">
-                      <div className="max-w-[190px] break-words">
-                        {order.address}
-                      </div>
-                    </td>
+                    <SortableHeader label="Subpoena Date" />
+                    <SortableHeader label="Date Served" />
+                    <SortableHeader label="Applicant" />
+                    <SortableHeader label="Case Number" />
+                    <SortableHeader label="DOB" />
+                    <SortableHeader label="SSN" />
+                    <th className="w-[220px] px-4 py-3">
+                      Provider on Subpoena
+                    </th>
+                    <th className="w-[185px] px-4 py-3">Records Requested</th>
+                    <SortableHeader label="Doctor" />
+                    <th className="w-[230px] px-4 py-3">Address</th>
                   </>
                 )}
 
-                <td className="sticky right-0 z-10 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-6 text-center align-middle shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)] group-hover:bg-[#F8FBFC]">
-                  <RushBadge rush={order.rush} />
-                </td>
+                <th className="sticky right-0 z-30 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-3 text-center shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)]">
+                  Rush
+                </th>
               </tr>
-            ))}
+            </thead>
 
-            {orders.length === 0 && (
-              <tr>
-                <td
-                  colSpan={minimumColumns ? 5 : 15}
-                  className="px-5 py-14 text-center text-[13px] text-[#94A3B8]"
+            <tbody>
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FBFC]"
                 >
-                  No report orders found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
+                  <td className="px-4 py-6 align-middle">
+                    <input type="checkbox" className="h-[13px] w-[13px]" />
+                  </td>
+
+                  <td className="px-4 py-6 align-middle">
+                    <button
+                      type="button"
+                      className="text-left text-[12px] font-semibold text-[#007F96] hover:underline"
+                    >
+                      {order.orderNo}
+                    </button>
+
+                    <p className="mt-2 text-[10px] text-[#94A3B8]">
+                      {order.subNo}
+                    </p>
+                  </td>
+
+                  <td className="px-4 py-6 align-top">
+                    <StatusBlock status={order.status} />
+                  </td>
+
+                  <td className="px-4 py-6 align-middle">
+                    {order.invoiced ? (
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#059669]">
+                        <CheckIcon />
+                        Invoiced
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCreateInvoice(order)}
+                        className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#007F96] hover:underline"
+                      >
+                        <DocumentIcon />
+                        Create Invoice
+                      </button>
+                    )}
+                  </td>
+
+                  {!minimumColumns && (
+                    <>
+                      <TableText>{order.subpoenaDate}</TableText>
+                      <TableText>{order.dateServed}</TableText>
+                      <TableText>{order.applicant}</TableText>
+                      <TableText>{order.caseNumber}</TableText>
+                      <TableText>{order.dob}</TableText>
+                      <TableText>{order.ssn}</TableText>
+                      <TableText>{order.provider}</TableText>
+                      <TableText>{order.recordsRequested}</TableText>
+                      <TableText>{order.doctor}</TableText>
+
+                      <td className="px-4 py-6 align-middle text-[11px] leading-[16px] text-[#475569]">
+                        <div className="max-w-[190px] break-words">
+                          {order.address}
+                        </div>
+                      </td>
+                    </>
+                  )}
+
+                  <td className="sticky right-0 z-10 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-6 text-center align-middle shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)] group-hover:bg-[#F8FBFC]">
+                    <RushBadge rush={order.rush} />
+                  </td>
+                </tr>
+              ))}
+
+              {orders.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={minimumColumns ? 5 : 15}
+                    className="px-5 py-14 text-center text-[13px] text-[#94A3B8]"
+                  >
+                    No report orders found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <CreateInvoiceModal
+        isOpen={Boolean(selectedInvoiceOrder)}
+        order={selectedInvoiceOrder}
+        onClose={() => setSelectedInvoiceOrder(null)}
+      />
+    </>
   );
 }
 
