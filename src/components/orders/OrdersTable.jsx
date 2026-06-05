@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import CreateInvoiceModal from "@/components/orders/CreateInvoiceModal";
+import CreateXrayInvoiceModal from "@/components/orders/CreateXrayInvoiceModal";
 
 const ORDERS_PER_PAGE = 6;
 
@@ -344,6 +345,7 @@ const orders = [
 export default function OrdersTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
+  const [selectedXrayOrder, setSelectedXrayOrder] = useState(null);
 
   const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
 
@@ -447,6 +449,7 @@ export default function OrdersTable() {
                     <InvoiceBlock
                       invoice={order.invoice}
                       onCreateInvoice={() => setSelectedInvoiceOrder(order)}
+                      onCreateXrayInvoice={() => setSelectedXrayOrder(order)}
                     />
                   </td>
 
@@ -524,6 +527,12 @@ export default function OrdersTable() {
         order={selectedInvoiceOrder}
         onClose={() => setSelectedInvoiceOrder(null)}
       />
+
+      <CreateXrayInvoiceModal
+        isOpen={Boolean(selectedXrayOrder)}
+        order={selectedXrayOrder}
+        onClose={() => setSelectedXrayOrder(null)}
+      />
     </>
   );
 }
@@ -557,7 +566,7 @@ function StatusAction({ item }) {
   );
 }
 
-function InvoiceBlock({ invoice, onCreateInvoice }) {
+function InvoiceBlock({ invoice, onCreateInvoice, onCreateXrayInvoice }) {
   if (invoice.createOnly) {
     return (
       <button
@@ -601,9 +610,13 @@ function InvoiceBlock({ invoice, onCreateInvoice }) {
       )}
 
       {invoice.showXray && (
-        <Link href="/orders/new" className="block text-[#007F96] underline">
+        <button
+          type="button"
+          onClick={onCreateXrayInvoice}
+          className="block text-[#007F96] underline"
+        >
           Create Xray Invoice
-        </Link>
+        </button>
       )}
 
       {invoice.showEmail && (
