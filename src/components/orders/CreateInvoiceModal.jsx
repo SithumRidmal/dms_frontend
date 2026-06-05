@@ -118,199 +118,242 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/45 px-4 py-6 backdrop-blur-[2px]">
-      <section className="flex w-full max-w-[760px] flex-col overflow-hidden rounded-[8px] bg-white shadow-2xl">
-        <div className="flex h-[48px] shrink-0 items-center justify-between border-b border-[#E2E8F0] px-5">
-          <h2 className="text-[15px] font-semibold text-[#111827]">
-            Create Invoice
-          </h2>
-
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-[2px]">
+      <section className="flex max-h-[calc(100vh-42px)] w-full max-w-[700px] flex-col overflow-hidden rounded-[10px] bg-white shadow-2xl">
+        <div className="relative shrink-0 bg-[#0B91A6] px-5 py-4 text-white">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-[28px] w-[28px] items-center justify-center rounded-[5px] text-[17px] leading-none text-[#94A3B8] hover:bg-[#F1F5F9] hover:text-[#334155]"
+            className="absolute right-4 top-4 flex h-[24px] w-[24px] items-center justify-center rounded-[6px] bg-white/15 text-[15px] leading-none text-white hover:bg-white/25"
             aria-label="Close modal"
           >
             ×
           </button>
+
+          <h2 className="text-[15px] font-semibold leading-none">
+            Create Invoice
+          </h2>
+
+          <p className="mt-3 text-[11px] font-medium text-white/90">
+            Order{" "}
+            <span className="font-semibold text-white">
+              {order.id || order.orderNo}
+            </span>{" "}
+            <span className="mx-1">•</span>
+            {order.applicant || "N/A"}
+          </p>
         </div>
 
-        <div className="shrink-0 border-b border-[#E2E8F0] bg-[#F8FAFC] px-5 py-3">
-          <div className="flex flex-wrap items-center gap-x-7 gap-y-2 text-[11px]">
-            <InfoItem label="Order ID:" value={order.id} />
-            <InfoItem label="WCAB:" value={order.court || "N/A"} />
-            <InfoItem label="Client:" value={order.applicant} />
-            <InfoItem
-              label="Company:"
-              value={order.company?.name || "N/A"}
+        <div className="shrink-0 border-b border-[#E2E8F0] bg-white px-5 py-3">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px]">
+            <MetaItem label="# ID" value={order.id || order.orderNo} />
+            <MetaItem
+              label=""
+              value={order.company?.name || order.provider || "N/A"}
               linkStyle
             />
           </div>
         </div>
 
-        <div className="shrink-0 border-b border-[#E2E8F0] px-5 py-4">
-          <div className="flex flex-wrap gap-2">
+        <div className="shrink-0 border-b border-[#E2E8F0] bg-white px-5">
+          <div className="flex flex-wrap items-center gap-6">
             {invoiceTypes.map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setActiveType(type)}
-                className={`h-[32px] rounded-[5px] px-4 text-[11px] font-semibold transition ${
+                className={`relative h-[42px] text-[11px] font-semibold transition ${
                   activeType === type
-                    ? "bg-[#0097B2] text-white"
-                    : "bg-[#F1F5F9] text-[#475569] hover:bg-[#E2E8F0]"
+                    ? "text-[#007F96]"
+                    : "text-[#475569] hover:text-[#007F96]"
                 }`}
               >
                 {type}
+
+                {activeType === type && (
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full rounded-full bg-[#0097B2]" />
+                )}
               </button>
             ))}
           </div>
         </div>
 
-        <div className="max-h-[calc(100vh-300px)] overflow-y-auto px-5 py-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <DateField
-              label="Invoice Date"
-              name="invoiceDate"
-              value={formData.invoiceDate}
-              onChange={handleChange}
-              error={errors.invoiceDate}
-            />
+        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[1fr_170px]">
+          <div className="min-h-0 overflow-y-auto px-5 py-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <DateField
+                label="Invoice Date"
+                name="invoiceDate"
+                value={formData.invoiceDate}
+                onChange={handleChange}
+                error={errors.invoiceDate}
+              />
 
-            <DateField
-              label="Service Date"
-              name="serviceDate"
-              value={formData.serviceDate}
-              onChange={handleChange}
-              error={errors.serviceDate}
-            />
+              <DateField
+                label="Service Date"
+                name="serviceDate"
+                value={formData.serviceDate}
+                onChange={handleChange}
+                error={errors.serviceDate}
+              />
+            </div>
 
-            <MoneyField
-              label="Served Amount"
-              name="servedAmount"
-              value={formData.servedAmount}
-              onChange={handleMoneyChange}
-              error={errors.servedAmount}
-            />
+            <SectionTitle title="Fees" />
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <MoneyField
+                label="Served Amount"
+                name="servedAmount"
+                value={formData.servedAmount}
+                onChange={handleMoneyChange}
+                error={errors.servedAmount}
+              />
+
+              <MoneyField
+                label="Service Fee"
+                name="serviceFee"
+                value={formData.serviceFee}
+                onChange={handleMoneyChange}
+                error={errors.serviceFee}
+              />
+
+              <MoneyField
+                label="Custodian Fee"
+                name="custodianFee"
+                value={formData.custodianFee}
+                onChange={handleMoneyChange}
+                error={errors.custodianFee}
+              />
+            </div>
+
+            <SectionTitle title="Additional Charges" />
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MoneyField
+                label="X-Ray Fee"
+                name="xrayFee"
+                value={formData.xrayFee}
+                onChange={handleMoneyChange}
+                error={errors.xrayFee}
+              />
+
+              <MoneyField
+                label="Mileage"
+                name="mileage"
+                value={formData.mileage}
+                onChange={handleMoneyChange}
+                error={errors.mileage}
+              />
+
+              <MoneyField
+                label="Parking"
+                name="parking"
+                value={formData.parking}
+                onChange={handleMoneyChange}
+                error={errors.parking}
+              />
+
+              <MoneyField
+                label="Other"
+                name="other"
+                value={formData.other}
+                onChange={handleMoneyChange}
+                error={errors.other}
+              />
+            </div>
+
+            <div className="mt-3 max-w-[160px]">
+              <NumberField
+                label="Pages"
+                name="pages"
+                value={formData.pages}
+                onChange={handleChange}
+                error={errors.pages}
+              />
+            </div>
+
+            <div className="mt-3">
+              <label className="mb-2 block text-[11px] font-semibold text-[#475569]">
+                Notes
+              </label>
+
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="Invoice notes..."
+                rows={2}
+                className="h-[52px] w-full resize-none rounded-[6px] border border-[#CBD5E1] bg-white px-3 py-2 text-[12px] text-[#111827] outline-none placeholder:text-[#94A3B8] focus:border-[#0097B2] focus:ring-2 focus:ring-[#0097B2]/10"
+              />
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-5">
+              <CheckboxField
+                label="Send Order Details"
+                name="sendOrderDetails"
+                checked={formData.sendOrderDetails}
+                onChange={handleChange}
+              />
+
+              <CheckboxField
+                label="Rush Order"
+                name="rushOrder"
+                checked={formData.rushOrder}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            <MoneyField
-              label="Service Fee"
-              name="serviceFee"
-              value={formData.serviceFee}
-              onChange={handleMoneyChange}
-              error={errors.serviceFee}
-            />
+          <aside className="flex min-h-[210px] flex-col border-t border-[#E2E8F0] bg-[#F8FAFC] px-4 py-4 lg:border-l lg:border-t-0">
+            <h3 className="mb-4 text-[12px] font-semibold text-[#334155]">
+              Summary
+            </h3>
 
-            <MoneyField
-              label="Custodian Fee"
-              name="custodianFee"
-              value={formData.custodianFee}
-              onChange={handleMoneyChange}
-              error={errors.custodianFee}
-            />
+            <div className="space-y-3">
+              <SummaryRow
+                label="Served Amount"
+                value={formatMoney(toNumber(formData.servedAmount))}
+              />
+              <SummaryRow
+                label="Service Fee"
+                value={formatMoney(toNumber(formData.serviceFee))}
+              />
+              <SummaryRow
+                label="Custodian Fee"
+                value={formatMoney(toNumber(formData.custodianFee))}
+              />
+            </div>
 
-            <MoneyField
-              label="X-Ray Fee"
-              name="xrayFee"
-              value={formData.xrayFee}
-              onChange={handleMoneyChange}
-              error={errors.xrayFee}
-            />
-          </div>
+            <div className="mt-5 rounded-[8px] border border-[#E2E8F0] bg-white px-3 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[12px] font-semibold text-[#111827]">
+                  Total
+                </span>
 
-          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MoneyField
-              label="Mileage"
-              name="mileage"
-              value={formData.mileage}
-              onChange={handleMoneyChange}
-              error={errors.mileage}
-            />
+                <span className="text-[15px] font-bold text-[#007F96]">
+                  {formatMoney(totalAmount)}
+                </span>
+              </div>
+            </div>
 
-            <MoneyField
-              label="Parking"
-              name="parking"
-              value={formData.parking}
-              onChange={handleMoneyChange}
-              error={errors.parking}
-            />
+            <div className="mt-auto pt-6">
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="h-[36px] w-full rounded-[7px] bg-[#111827] px-4 text-[12px] font-semibold text-white hover:bg-[#1F2937]"
+              >
+                Create Invoice
+              </button>
 
-            <NumberField
-              label="Pages"
-              name="pages"
-              value={formData.pages}
-              onChange={handleChange}
-              error={errors.pages}
-            />
-
-            <MoneyField
-              label="Other"
-              name="other"
-              value={formData.other}
-              onChange={handleMoneyChange}
-              error={errors.other}
-            />
-          </div>
-
-          <div className="mt-4">
-            <label className="mb-2 block text-[11px] font-semibold text-[#475569]">
-              Notes
-            </label>
-
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="Invoice notes..."
-              rows={3}
-              className="h-[52px] w-full resize-none rounded-[6px] border border-[#CBD5E1] bg-white px-3 py-2 text-[12px] text-[#111827] outline-none placeholder:text-[#94A3B8] focus:border-[#0097B2] focus:ring-2 focus:ring-[#0097B2]/10"
-            />
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-8">
-            <CheckboxField
-              label="Send Order Details"
-              name="sendOrderDetails"
-              checked={formData.sendOrderDetails}
-              onChange={handleChange}
-            />
-
-            <CheckboxField
-              label="Rush Order"
-              name="rushOrder"
-              checked={formData.rushOrder}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        <div className="flex shrink-0 flex-col gap-4 border-t border-[#E2E8F0] bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[13px] font-semibold text-[#111827]">
-            Total Amount:{" "}
-            <span className="text-[22px] font-bold text-[#007F96]">
-              {formatMoney(totalAmount)}
-            </span>
-          </p>
-
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-[36px] rounded-[6px] px-5 text-[12px] font-semibold text-[#475569] hover:bg-[#F1F5F9]"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="h-[36px] rounded-[6px] bg-[#0097B2] px-6 text-[12px] font-semibold text-white hover:bg-[#0086A0]"
-            >
-              Create Invoice
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="mt-3 h-[30px] w-full rounded-[6px] text-[12px] font-semibold text-[#94A3B8] hover:bg-[#E2E8F0] hover:text-[#475569]"
+              >
+                Cancel
+              </button>
+            </div>
+          </aside>
         </div>
       </section>
     </div>,
@@ -318,10 +361,10 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
   );
 }
 
-function InfoItem({ label, value, linkStyle = false }) {
+function MetaItem({ label, value, linkStyle = false }) {
   return (
     <p className="text-[#64748B]">
-      {label}{" "}
+      {label && <span className="mr-1">{label}</span>}
       <span
         className={`font-semibold ${
           linkStyle ? "text-[#007F96]" : "text-[#334155]"
@@ -330,6 +373,14 @@ function InfoItem({ label, value, linkStyle = false }) {
         {value}
       </span>
     </p>
+  );
+}
+
+function SectionTitle({ title }) {
+  return (
+    <h3 className="mb-2 mt-4 text-[11px] font-semibold text-[#64748B]">
+      {title}
+    </h3>
   );
 }
 
@@ -345,7 +396,7 @@ function DateField({ label, name, value, onChange, error = "" }) {
         name={name}
         value={value}
         onChange={onChange}
-        className={`h-[36px] w-full rounded-[6px] border bg-white px-3 text-[12px] text-[#111827] outline-none focus:ring-2 ${
+        className={`h-[34px] w-full rounded-[6px] border bg-white px-3 text-[12px] text-[#111827] outline-none focus:ring-2 ${
           error
             ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
             : "border-[#CBD5E1] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
@@ -375,7 +426,7 @@ function MoneyField({ label, name, value, onChange, error = "" }) {
           name={name}
           value={value}
           onChange={onChange}
-          className={`h-[36px] w-full rounded-[6px] border bg-white pl-7 pr-3 text-[12px] text-[#111827] outline-none focus:ring-2 ${
+          className={`h-[34px] w-full rounded-[6px] border bg-white pl-7 pr-3 text-[12px] text-[#111827] outline-none focus:ring-2 ${
             error
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
               : "border-[#CBD5E1] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
@@ -401,7 +452,7 @@ function NumberField({ label, name, value, onChange, error = "" }) {
         name={name}
         value={value}
         onChange={onChange}
-        className={`h-[36px] w-full rounded-[6px] border bg-white px-3 text-[12px] text-[#111827] outline-none focus:ring-2 ${
+        className={`h-[34px] w-full rounded-[6px] border bg-white px-3 text-[12px] text-[#111827] outline-none focus:ring-2 ${
           error
             ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
             : "border-[#CBD5E1] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
@@ -425,6 +476,15 @@ function CheckboxField({ label, name, checked, onChange }) {
       />
       {label}
     </label>
+  );
+}
+
+function SummaryRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-[10px] text-[#64748B]">{label}</span>
+      <span className="text-[11px] font-semibold text-[#334155]">{value}</span>
+    </div>
   );
 }
 
