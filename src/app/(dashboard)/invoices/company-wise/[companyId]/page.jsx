@@ -110,6 +110,7 @@ export default function CompanyInvoiceDetailsPage() {
     filteredInvoiceIds.every((id) => selectedIds.includes(id));
 
   const selectedCount = selectedIds.length;
+  const hasSelectedInvoices = selectedCount > 0;
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -198,8 +199,12 @@ export default function CompanyInvoiceDetailsPage() {
             <button
               type="button"
               onClick={handleResendSelected}
-              disabled={selectedCount === 0}
-              className="inline-flex h-[34px] items-center justify-center gap-2 rounded-[6px] border border-[#E2E8F0] bg-white px-4 text-[12px] font-semibold text-[#64748B] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!hasSelectedInvoices}
+              className={`inline-flex h-[34px] items-center justify-center gap-2 rounded-[6px] border px-4 text-[12px] font-semibold transition disabled:cursor-not-allowed ${
+                hasSelectedInvoices
+                  ? "border-[#0097B2] bg-[#0097B2] text-white shadow-sm hover:bg-[#0086A0]"
+                  : "border-[#E2E8F0] bg-white text-[#94A3B8] opacity-70"
+              }`}
             >
               <SendIcon />
               Resend Selected ({selectedCount})
@@ -208,8 +213,12 @@ export default function CompanyInvoiceDetailsPage() {
             <button
               type="button"
               onClick={handleWriteOffSelected}
-              disabled={selectedCount === 0}
-              className="inline-flex h-[34px] items-center justify-center gap-2 rounded-[6px] border border-[#E2E8F0] bg-white px-4 text-[12px] font-semibold text-[#64748B] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!hasSelectedInvoices}
+              className={`inline-flex h-[34px] items-center justify-center gap-2 rounded-[6px] border px-4 text-[12px] font-semibold transition disabled:cursor-not-allowed ${
+                hasSelectedInvoices
+                  ? "border-red-500 bg-red-500 text-white shadow-sm hover:bg-red-600"
+                  : "border-[#E2E8F0] bg-white text-[#94A3B8] opacity-70"
+              }`}
             >
               <CircleIcon />
               Write Off Selected ({selectedCount})
