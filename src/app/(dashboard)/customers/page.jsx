@@ -102,24 +102,24 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState(customersSeed);
 
   const handleNewCustomer = () => {
-    console.log("Open new customer form");
+    console.log("Open new facility form");
   };
 
   const handleDeleteCustomer = (customer) => {
     setCustomers((prev) => prev.filter((item) => item.id !== customer.id));
-    console.log("Deleted customer:", customer);
+    console.log("Deleted facility:", customer);
   };
 
   const handleNotes = (customer) => {
-    console.log("Open customer notes:", customer);
+    console.log("Open facility notes:", customer);
   };
 
   const handleUpload = (customer) => {
-    console.log("Open customer upload:", customer);
+    console.log("Open facility upload:", customer);
   };
 
   const handleUsers = (customer) => {
-    console.log("Open customer users:", customer);
+    console.log("Open facility users:", customer);
   };
 
   return (
@@ -127,7 +127,7 @@ export default function CustomersPage() {
       <div className="flex min-h-[calc(100vh-92px)] min-w-0 flex-col gap-5 overflow-hidden">
         <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-center">
           <h1 className="shrink-0 text-[18px] font-semibold text-[#111827]">
-            List of Customers
+            List of Facilities
           </h1>
 
           <div className="flex w-full flex-wrap items-center gap-3 lg:ml-auto lg:w-auto lg:justify-end">
@@ -140,12 +140,12 @@ export default function CustomersPage() {
             </Link>
 
             <Link
-  href="/customers/new"
-  className="inline-flex h-[36px] items-center justify-center gap-2 whitespace-nowrap rounded-[6px] bg-[#0097B2] px-4 text-[12px] font-semibold text-white shadow-sm hover:bg-[#0086A0]"
->
-  <UserPlusIcon />
-  New Customer
-</Link>
+              href="/customers/new"
+              className="inline-flex h-[36px] items-center justify-center gap-2 whitespace-nowrap rounded-[6px] bg-[#0097B2] px-4 text-[12px] font-semibold text-white shadow-sm hover:bg-[#0086A0]"
+            >
+              <UserPlusIcon />
+              New Facility
+            </Link>
           </div>
         </div>
 

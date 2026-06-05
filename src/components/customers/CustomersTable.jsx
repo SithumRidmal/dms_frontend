@@ -44,7 +44,7 @@ export default function CustomersTable({
             <thead className="sticky top-0 z-10 bg-white">
               <tr className="border-b border-[#E2E8F0] text-left text-[11px] font-semibold text-[#475569]">
                 <th className="w-[60px] px-5 py-3">ID</th>
-                <th className="w-[260px] px-5 py-3">Customer</th>
+                <th className="w-[260px] px-5 py-3">Facility</th>
                 <th className="w-[180px] px-5 py-3">City</th>
                 <th className="w-[110px] px-5 py-3">Zip</th>
                 <th className="w-[110px] px-5 py-3 text-center">Notes</th>
@@ -104,12 +104,12 @@ export default function CustomersTable({
 
                   <td className="px-5 py-4 text-center">
                     <Link
-  href={`/customers/${customer.id}/users`}
-  className="inline-flex h-[28px] items-center justify-center gap-2 whitespace-nowrap rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] px-3 text-[11px] font-semibold text-[#334155] hover:bg-[#F1F5F9]"
->
-  <UsersIcon />
-  Users
-</Link>
+                      href={`/customers/${customer.id}/users`}
+                      className="inline-flex h-[28px] items-center justify-center gap-2 whitespace-nowrap rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] px-3 text-[11px] font-semibold text-[#334155] hover:bg-[#F1F5F9]"
+                    >
+                      <UsersIcon />
+                      Users
+                    </Link>
                   </td>
 
                   <td className="px-5 py-4 text-center">
@@ -131,7 +131,7 @@ export default function CustomersTable({
                     colSpan={8}
                     className="px-5 py-12 text-center text-[13px] text-[#94A3B8]"
                   >
-                    No customers found.
+                    No facilities found.
                   </td>
                 </tr>
               )}
@@ -142,9 +142,9 @@ export default function CustomersTable({
 
       <ConfirmModal
         open={deleteModal.open}
-        title="Delete Customer"
+        title="Delete Facility"
         message={`Are you sure you want to delete ${
-          deleteModal.customer?.customer || "this customer"
+          deleteModal.customer?.customer || "this facility"
         }? This action cannot be undone.`}
         variant="danger"
         confirmLabel="Confirm"

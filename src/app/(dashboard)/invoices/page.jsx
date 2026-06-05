@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import DashboardShell from "@/components/layout/DashboardShell";
 import InvoiceReportTable from "@/components/invoices/InvoiceReportTable";
 import CurrentDateTime from "@/components/dashboard/CurrentDateTime";
@@ -206,7 +207,17 @@ export default function InvoicesPage() {
           />
         </div>
 
-        <InvoiceTabs activeTab={activeTab} onChange={setActiveTab} />
+        <div className="flex flex-col gap-3 border-b border-[#E2E8F0] pb-0 lg:flex-row lg:items-end lg:justify-between">
+          <InvoiceTabs activeTab={activeTab} onChange={setActiveTab} />
+
+          <Link
+            href="/invoices/company-wise"
+            className="mb-3 inline-flex h-[34px] w-fit items-center justify-center gap-2 whitespace-nowrap rounded-[6px] border border-[#67D8E8] bg-[#E6F7FA] px-4 text-[12px] font-semibold text-[#007F96] hover:bg-[#DDF6FA]"
+          >
+            <CompanyIcon />
+            View Company Wise
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(520px,650px)]">
           <InvoiceFilters
@@ -231,32 +242,30 @@ export default function InvoicesPage() {
 
 function InvoiceTabs({ activeTab, onChange }) {
   return (
-    <div className="border-b border-[#E2E8F0]">
-      <div className="flex items-center gap-3 overflow-x-auto">
-        <button
-          type="button"
-          onClick={() => onChange("outstanding")}
-          className={`whitespace-nowrap border-b-2 px-5 py-3 text-[13px] font-semibold transition ${
-            activeTab === "outstanding"
-              ? "border-[#0097B2] bg-[#E6F7FA] text-[#007F96]"
-              : "border-transparent text-[#64748B] hover:bg-[#F8FAFC]"
-          }`}
-        >
-          Outstanding Invoices (66)
-        </button>
+    <div className="flex items-center gap-3 overflow-x-auto">
+      <button
+        type="button"
+        onClick={() => onChange("outstanding")}
+        className={`whitespace-nowrap border-b-2 px-5 py-3 text-[13px] font-semibold transition ${
+          activeTab === "outstanding"
+            ? "border-[#0097B2] bg-[#E6F7FA] text-[#007F96]"
+            : "border-transparent text-[#64748B] hover:bg-[#F8FAFC]"
+        }`}
+      >
+        Outstanding Invoices (66)
+      </button>
 
-        <button
-          type="button"
-          onClick={() => onChange("resend")}
-          className={`whitespace-nowrap border-b-2 px-5 py-3 text-[13px] font-semibold transition ${
-            activeTab === "resend"
-              ? "border-[#0097B2] bg-[#E6F7FA] text-[#007F96]"
-              : "border-transparent text-[#64748B] hover:bg-[#F8FAFC]"
-          }`}
-        >
-          Resend Invoices (13)
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => onChange("resend")}
+        className={`whitespace-nowrap border-b-2 px-5 py-3 text-[13px] font-semibold transition ${
+          activeTab === "resend"
+            ? "border-[#0097B2] bg-[#E6F7FA] text-[#007F96]"
+            : "border-transparent text-[#64748B] hover:bg-[#F8FAFC]"
+        }`}
+      >
+        Resend Invoices (13)
+      </button>
     </div>
   );
 }
@@ -482,5 +491,18 @@ function ResendInvoicesPanel({ invoices }) {
         </table>
       </div>
     </section>
+  );
+}
+
+function CompanyIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4 21V5h16v16M8 9h2M8 13h2M8 17h2M14 9h2M14 13h2M14 17h2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

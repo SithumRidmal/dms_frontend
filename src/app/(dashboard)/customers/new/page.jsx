@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import DashboardShell from "@/components/layout/DashboardShell";
 
 const initialFormData = {
-  customerName: "",
+  facilityName: "",
   parentCompany: "Smith & Associates",
   userName: "",
   password: "",
@@ -20,19 +20,22 @@ const initialFormData = {
   phone: "",
   fax: "",
   email: "",
-
-  managerFirstName: "",
-  managerMiddleName: "",
-  managerLastName: "",
-  managerPhone: "",
-  managerEmail: "",
   ipAddresses: "",
 };
 
-export default function NewCustomerPage() {
+const createEmptyManager = () => ({
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  phone: "",
+  email: "",
+});
+
+export default function NewFacilityPage() {
   const router = useRouter();
 
   const [formData, setFormData] = useState(initialFormData);
+  const [managers, setManagers] = useState([createEmptyManager()]);
   const [errors, setErrors] = useState({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -41,7 +44,7 @@ export default function NewCustomerPage() {
 
     let nextValue = value;
 
-    if (name === "phone" || name === "fax" || name === "managerPhone") {
+    if (name === "phone" || name === "fax") {
       nextValue = formatPhone(value);
     }
 
@@ -59,7 +62,7 @@ export default function NewCustomerPage() {
     }));
 
     if (submitAttempted) {
-      const fieldError = validateCustomerField(name, nextValue);
+      const fieldError = validateFacilityField(name, nextValue);
 
       setErrors((prev) => {
         const nextErrors = { ...prev };
@@ -75,17 +78,76 @@ export default function NewCustomerPage() {
     }
   };
 
+  const handleManagerChange = (index, field, value) => {
+    let nextValue = value;
+
+    if (field === "phone") {
+      nextValue = formatPhone(value);
+    }
+
+    setManagers((prev) =>
+      prev.map((manager, managerIndex) =>
+        managerIndex === index
+          ? {
+              ...manager,
+              [field]: nextValue,
+            }
+          : manager
+      )
+    );
+
+    if (submitAttempted) {
+      const errorKey = `managers.${index}.${field}`;
+      const fieldError = validateManagerField(field, nextValue);
+
+      setErrors((prev) => {
+        const nextErrors = { ...prev };
+
+        if (fieldError) {
+          nextErrors[errorKey] = fieldError;
+        } else {
+          delete nextErrors[errorKey];
+        }
+
+        return nextErrors;
+      });
+    }
+  };
+
+  const handleAddManager = () => {
+    setManagers((prev) => [...prev, createEmptyManager()]);
+  };
+
+  const handleRemoveManager = (index) => {
+    setManagers((prev) => prev.filter((_, managerIndex) => managerIndex !== index));
+
+    setErrors((prev) => {
+      const nextErrors = {};
+
+      Object.entries(prev).forEach(([key, value]) => {
+        if (!key.startsWith("managers.")) {
+          nextErrors[key] = value;
+        }
+      });
+
+      return nextErrors;
+    });
+  };
+
   const handleSave = () => {
     setSubmitAttempted(true);
 
-    const validationErrors = validateCustomerForm(formData);
+    const validationErrors = validateFacilityForm(formData, managers);
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length > 0) return;
 
-    console.log("New customer data:", formData);
+    console.log("New facility data:", {
+      ...formData,
+      managers,
+    });
 
-    // Later: call create customer API here
+    // Later: call create facility API here
     router.push("/customers");
   };
 
@@ -94,39 +156,46 @@ export default function NewCustomerPage() {
     return errors[field] || "";
   };
 
+  const getManagerError = (index, field) => {
+    if (!submitAttempted) return "";
+    return errors[`managers.${index}.${field}`] || "";
+  };
+
   return (
     <DashboardShell>
       <div className="flex min-h-[calc(100vh-92px)] min-w-0 flex-col gap-5 overflow-hidden">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-[18px] font-semibold text-[#111827]">
-            Customer Information
+            Facility Information
           </h1>
 
           <Link
             href="/customers"
             className="text-[12px] font-semibold text-[#007F96] hover:underline"
           >
-            Customers
+            Facilities
           </Link>
         </div>
 
         <section className="rounded-[10px] border border-[#E2E8F0] bg-white px-5 py-5 shadow-sm">
           <div className="mx-auto w-full max-w-[980px]">
-            
-
             <div className="space-y-5">
+              <h2 className="text-[13px] font-semibold text-[#111827]">
+                Facility Information
+              </h2>
+
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
-                <CustomerField
-                  label="Customer Name"
-                  name="customerName"
-                  value={formData.customerName}
+                <FacilityField
+                  label="Facility Name"
+                  name="facilityName"
+                  value={formData.facilityName}
                   onChange={handleChange}
-                  error={getError("customerName")}
+                  error={getError("facilityName")}
                   required
                   hint="Please leave blank spaces between numbers, names or words"
                 />
 
-                <CustomerField
+                <FacilityField
                   label="Parent Company"
                   name="parentCompany"
                   value={formData.parentCompany}
@@ -143,7 +212,7 @@ export default function NewCustomerPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <CustomerField
+                <FacilityField
                   label="User Name"
                   name="userName"
                   value={formData.userName}
@@ -152,7 +221,7 @@ export default function NewCustomerPage() {
                   required
                 />
 
-                <CustomerField
+                <FacilityField
                   label="Password"
                   name="password"
                   value={formData.password}
@@ -164,21 +233,21 @@ export default function NewCustomerPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <CustomerField
+                <FacilityField
                   label="First Name"
                   name="firstName"
                   value={formData.firstName}
                   onChange={handleChange}
                 />
 
-                <CustomerField
+                <FacilityField
                   label="Middle Name"
                   name="middleName"
                   value={formData.middleName}
                   onChange={handleChange}
                 />
 
-                <CustomerField
+                <FacilityField
                   label="Last Name"
                   name="lastName"
                   value={formData.lastName}
@@ -186,8 +255,8 @@ export default function NewCustomerPage() {
                 />
               </div>
 
-              <CustomerField
-                label="Customer Street Address / PO Box"
+              <FacilityField
+                label="Facility Street Address / PO Box"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
@@ -195,7 +264,7 @@ export default function NewCustomerPage() {
               />
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-[110px_minmax(0,1fr)_90px]">
-                <CustomerField
+                <FacilityField
                   label="Zip Code"
                   name="zipCode"
                   value={formData.zipCode}
@@ -204,14 +273,14 @@ export default function NewCustomerPage() {
                   inputMode="numeric"
                 />
 
-                <CustomerField
+                <FacilityField
                   label="City"
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
                 />
 
-                <CustomerField
+                <FacilityField
                   label="State"
                   name="state"
                   value={formData.state}
@@ -222,7 +291,7 @@ export default function NewCustomerPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <CustomerField
+                <FacilityField
                   label="Phone"
                   name="phone"
                   value={formData.phone}
@@ -232,7 +301,7 @@ export default function NewCustomerPage() {
                   inputMode="numeric"
                 />
 
-                <CustomerField
+                <FacilityField
                   label="Fax"
                   name="fax"
                   value={formData.fax}
@@ -243,7 +312,7 @@ export default function NewCustomerPage() {
                 />
               </div>
 
-              <CustomerField
+              <FacilityField
                 label="Email"
                 name="email"
                 value={formData.email}
@@ -257,66 +326,42 @@ export default function NewCustomerPage() {
 
               <div>
                 <h3 className="mb-4 text-[13px] font-semibold text-[#111827]">
-                  Office Manager
+                  Office Managers
                 </h3>
 
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      <CustomerField
-                        label="First Name"
-                        name="managerFirstName"
-                        value={formData.managerFirstName}
-                        onChange={handleChange}
-                      />
-
-                      <CustomerField
-                        label="Middle Name"
-                        name="managerMiddleName"
-                        value={formData.managerMiddleName}
-                        onChange={handleChange}
-                      />
-
-                      <CustomerField
-                        label="Last Name"
-                        name="managerLastName"
-                        value={formData.managerLastName}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                      <CustomerField
-                        label="Phone"
-                        name="managerPhone"
-                        value={formData.managerPhone}
-                        onChange={handleChange}
-                        placeholder="XXX-XXX-XXXX"
-                        error={getError("managerPhone")}
-                        inputMode="numeric"
-                      />
-
-                      <CustomerField
-                        label="Email"
-                        name="managerEmail"
-                        value={formData.managerEmail}
-                        onChange={handleChange}
-                        error={getError("managerEmail")}
-                      />
-                    </div>
-                  </div>
-
-                  <CustomerField
-                    label="IP Addresses"
-                    name="ipAddresses"
-                    value={formData.ipAddresses}
-                    onChange={handleChange}
-                    textarea
-                    placeholder="WHITE LIST OF IP ADDRESS (ONE IP ADDRESS PER LINE)"
-                    hint="one ip address per line"
-                  />
+                <div className="space-y-4">
+                  {managers.map((manager, index) => (
+                    <ManagerSection
+                      key={index}
+                      manager={manager}
+                      index={index}
+                      canRemove={managers.length > 1}
+                      onChange={handleManagerChange}
+                      onRemove={handleRemoveManager}
+                      getError={getManagerError}
+                    />
+                  ))}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddManager}
+                  className="mt-4 inline-flex h-[34px] items-center justify-center gap-2 rounded-[6px] border border-dashed border-[#0097B2] bg-[#E6F7FA]/40 px-4 text-[12px] font-semibold text-[#007F96] hover:bg-[#E6F7FA]"
+                >
+                  <PlusCircleIcon />
+                  Add Manager
+                </button>
               </div>
+
+              <FacilityField
+                label="IP Addresses"
+                name="ipAddresses"
+                value={formData.ipAddresses}
+                onChange={handleChange}
+                textarea
+                placeholder="WHITE LIST OF IP ADDRESSES (ONE IP ADDRESS PER LINE)"
+                hint="one ip address per line"
+              />
 
               {submitAttempted && Object.keys(errors).length > 0 && (
                 <div className="rounded-[7px] border border-red-200 bg-red-50 px-3 py-3 text-[12px] font-semibold text-red-600">
@@ -325,14 +370,14 @@ export default function NewCustomerPage() {
               )}
 
               <div className="pt-2">
-  <button
-    type="button"
-    onClick={handleSave}
-    className="inline-flex h-[38px] min-w-[74px] items-center justify-center rounded-[6px] bg-[#0097B2] px-5 text-[12px] font-semibold text-white hover:bg-[#0086A0]"
-  >
-    Save
-  </button>
-</div>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className="inline-flex h-[38px] min-w-[74px] items-center justify-center rounded-[6px] bg-[#0097B2] px-5 text-[12px] font-semibold text-white hover:bg-[#0086A0]"
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -341,7 +386,83 @@ export default function NewCustomerPage() {
   );
 }
 
-function CustomerField({
+function ManagerSection({
+  manager,
+  index,
+  canRemove,
+  onChange,
+  onRemove,
+  getError,
+}) {
+  return (
+    <div className="rounded-[8px] border border-[#E2E8F0] bg-white px-4 py-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h4 className="text-[11px] font-semibold text-[#64748B]">
+          Manager {index + 1}
+        </h4>
+
+        {canRemove && (
+          <button
+            type="button"
+            onClick={() => onRemove(index)}
+            className="inline-flex h-[26px] items-center justify-center gap-1 rounded-[5px] border border-red-200 bg-red-50 px-3 text-[10px] font-semibold text-red-500 hover:bg-red-100"
+          >
+            <TrashIcon />
+            Remove
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <FacilityField
+          label="First Name"
+          name={`manager-${index}-firstName`}
+          value={manager.firstName}
+          onChange={(e) => onChange(index, "firstName", e.target.value)}
+          error={getError(index, "firstName")}
+        />
+
+        <FacilityField
+          label="Middle Name"
+          name={`manager-${index}-middleName`}
+          value={manager.middleName}
+          onChange={(e) => onChange(index, "middleName", e.target.value)}
+          error={getError(index, "middleName")}
+        />
+
+        <FacilityField
+          label="Last Name"
+          name={`manager-${index}-lastName`}
+          value={manager.lastName}
+          onChange={(e) => onChange(index, "lastName", e.target.value)}
+          error={getError(index, "lastName")}
+        />
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <FacilityField
+          label="Phone"
+          name={`manager-${index}-phone`}
+          value={manager.phone}
+          onChange={(e) => onChange(index, "phone", e.target.value)}
+          placeholder="XXX-XXX-XXXX"
+          error={getError(index, "phone")}
+          inputMode="numeric"
+        />
+
+        <FacilityField
+          label="Email"
+          name={`manager-${index}-email`}
+          value={manager.email}
+          onChange={(e) => onChange(index, "email", e.target.value)}
+          error={getError(index, "email")}
+        />
+      </div>
+    </div>
+  );
+}
+
+function FacilityField({
   label,
   name,
   value,
@@ -415,11 +536,11 @@ function CustomerField({
   );
 }
 
-function validateCustomerForm(data) {
+function validateFacilityForm(data, managers) {
   const errors = {};
 
-  if (!data.customerName.trim()) {
-    errors.customerName = "Customer name is required";
+  if (!data.facilityName.trim()) {
+    errors.facilityName = "Facility name is required";
   }
 
   if (!data.userName.trim()) {
@@ -438,10 +559,6 @@ function validateCustomerForm(data) {
     errors.email = "Enter a valid email address";
   }
 
-  if (data.managerEmail && !isValidEmail(data.managerEmail)) {
-    errors.managerEmail = "Enter a valid email address";
-  }
-
   if (data.zipCode && data.zipCode.length !== 5) {
     errors.zipCode = "ZIP must be 5 digits";
   }
@@ -458,16 +575,22 @@ function validateCustomerForm(data) {
     errors.fax = "Enter a valid 10 digit number";
   }
 
-  if (data.managerPhone && getDigits(data.managerPhone).length !== 10) {
-    errors.managerPhone = "Enter a valid 10 digit number";
-  }
+  managers.forEach((manager, index) => {
+    if (manager.phone && getDigits(manager.phone).length !== 10) {
+      errors[`managers.${index}.phone`] = "Enter a valid 10 digit number";
+    }
+
+    if (manager.email && !isValidEmail(manager.email)) {
+      errors[`managers.${index}.email`] = "Enter a valid email address";
+    }
+  });
 
   return errors;
 }
 
-function validateCustomerField(field, value) {
+function validateFacilityField(field, value) {
   if (!value.trim()) {
-    if (field === "customerName") return "Customer name is required";
+    if (field === "facilityName") return "Facility name is required";
     if (field === "userName") return "User name is required";
     if (field === "password") return "Password is required";
     if (field === "email") return "Email is required";
@@ -477,8 +600,8 @@ function validateCustomerField(field, value) {
     return "Password must be at least 8 characters";
   }
 
-  if ((field === "email" || field === "managerEmail") && value) {
-    if (!isValidEmail(value)) return "Enter a valid email address";
+  if (field === "email" && value && !isValidEmail(value)) {
+    return "Enter a valid email address";
   }
 
   if (field === "zipCode" && value && value.length !== 5) {
@@ -489,11 +612,19 @@ function validateCustomerField(field, value) {
     return "State must be 2 letters";
   }
 
-  if (
-    (field === "phone" || field === "fax" || field === "managerPhone") &&
-    value &&
-    getDigits(value).length !== 10
-  ) {
+  if ((field === "phone" || field === "fax") && value) {
+    if (getDigits(value).length !== 10) return "Enter a valid 10 digit number";
+  }
+
+  return "";
+}
+
+function validateManagerField(field, value) {
+  if (field === "email" && value && !isValidEmail(value)) {
+    return "Enter a valid email address";
+  }
+
+  if (field === "phone" && value && getDigits(value).length !== 10) {
     return "Enter a valid 10 digit number";
   }
 
@@ -515,4 +646,38 @@ function formatPhone(value) {
   if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
 
   return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function PlusCircleIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+      <circle
+        cx="12"
+        cy="12"
+        r="8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M12 8v8M8 12h8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
