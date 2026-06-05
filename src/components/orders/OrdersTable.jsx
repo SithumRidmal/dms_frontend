@@ -6,6 +6,7 @@ import CreateInvoiceModal from "@/components/orders/CreateInvoiceModal";
 import CreateXrayInvoiceModal from "@/components/orders/CreateXrayInvoiceModal";
 import CoverSheetModal from "@/components/orders/CoverSheetModal";
 import XrayCoverSheetModal from "@/components/orders/XrayCoverSheetModal";
+import CertificateNoRecordsModal from "@/components/orders/CertificateNoRecordsModal";
 
 const ORDERS_PER_PAGE = 6;
 
@@ -174,6 +175,7 @@ const orders = [
       "Copy Center",
       "Certification",
       "Records",
+      "CNR",
       "Called",
       "Edit Order",
     ],
@@ -351,6 +353,7 @@ export default function OrdersTable() {
   const [selectedCoverSheetOrder, setSelectedCoverSheetOrder] = useState(null);
   const [selectedXrayCoverSheetOrder, setSelectedXrayCoverSheetOrder] =
     useState(null);
+  const [selectedCnrOrder, setSelectedCnrOrder] = useState(null);
 
   const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
 
@@ -479,7 +482,10 @@ export default function OrdersTable() {
                   </td>
 
                   <td className="px-4 py-5 align-top">
-                    <FormsList forms={order.forms} />
+                    <FormsList
+                      forms={order.forms}
+                      onCnrClick={() => setSelectedCnrOrder(order)}
+                    />
                   </td>
                 </tr>
               ))}
@@ -553,6 +559,12 @@ export default function OrdersTable() {
         isOpen={Boolean(selectedXrayCoverSheetOrder)}
         order={selectedXrayCoverSheetOrder}
         onClose={() => setSelectedXrayCoverSheetOrder(null)}
+      />
+
+      <CertificateNoRecordsModal
+        isOpen={Boolean(selectedCnrOrder)}
+        order={selectedCnrOrder}
+        onClose={() => setSelectedCnrOrder(null)}
       />
     </>
   );
@@ -726,18 +738,23 @@ function CompanyBlock({ company }) {
   );
 }
 
-function FormsList({ forms }) {
+function FormsList({ forms, onCnrClick }) {
   return (
     <div className="space-y-1">
-      {forms.map((form) => (
-        <button
-          key={form}
-          type="button"
-          className="block text-left text-[10px] font-medium text-[#007F96] underline"
-        >
-          {form}
-        </button>
-      ))}
+      {forms.map((form) => {
+        const isCnr = form === "CNR";
+
+        return (
+          <button
+            key={form}
+            type="button"
+            onClick={isCnr ? onCnrClick : undefined}
+            className="block text-left text-[10px] font-medium text-[#007F96] underline"
+          >
+            {form}
+          </button>
+        );
+      })}
     </div>
   );
 }

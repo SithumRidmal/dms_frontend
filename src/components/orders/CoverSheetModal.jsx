@@ -2,6 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import {
+  SHEET_COLORS,
+  SHEET_COMPANY_INFO,
+  SHEET_DEFAULT_ADDRESS,
+} from "@/lib/sheetTemplateConstants";
 
 export default function CoverSheetModal({ isOpen, order, onClose }) {
   const [mounted, setMounted] = useState(false);
@@ -82,52 +87,44 @@ export default function CoverSheetModal({ isOpen, order, onClose }) {
         <div className="min-h-0 flex-1 overflow-y-auto bg-white px-8 py-7">
           <div className="mx-auto w-full max-w-[620px] bg-white text-[#111827]">
             <p className="text-center text-[11px] italic text-[#7E22CE]">
-              &quot;Litigation Support Specialists&quot;
+              &quot;{SHEET_COMPANY_INFO.tagline}&quot;
             </p>
 
-            <div className="mt-1 h-px w-full bg-[#C084FC]" />
+            <div
+              className="mt-1 h-px w-full"
+              style={{ backgroundColor: SHEET_COLORS.lightPurple }}
+            />
 
             <div className="mt-5 text-center">
               <h1 className="font-serif text-[30px] font-bold leading-none text-[#111827]">
-                DMS
+                {SHEET_COMPANY_INFO.logoText}
               </h1>
 
               <p className="mt-4 text-[11px] text-[#475569]">
-                Document Management Services, Inc.
+                {SHEET_COMPANY_INFO.companyName}
               </p>
             </div>
 
             <div className="mt-8 space-y-4 font-serif text-[13px] leading-[20px]">
               <CoverLine label="Applicant:" value={coverData.applicant} />
-
               <CoverLine label="Requestor:" value={coverData.requestor} />
 
-              <p className="ml-[66px] text-[#B45309]">
-                2020 Hurley Way Ste. 405
-                <br />
-                Sacramento, CA 95825
-              </p>
+              <DefaultAddress className="ml-[66px]" />
 
               <CoverLine label="Your File #:" value={coverData.yourFile} />
-
-              <CoverLine
-                label="Case Number:"
-                value={coverData.caseNumber}
-              />
-
+              <CoverLine label="Case Number:" value={coverData.caseNumber} />
               <CoverLine
                 label="Location Copied:"
                 value={coverData.locationCopied}
               />
 
               <div className="pt-8">
-                <CoverLine label="Delivered To:" value={coverData.deliveredTo} />
+                <CoverLine
+                  label="Delivered To:"
+                  value={coverData.deliveredTo}
+                />
 
-                <p className="ml-[78px] text-[#B45309]">
-                  2020 Hurley Way Ste. 405
-                  <br />
-                  Sacramento, CA 95825
-                </p>
+                <DefaultAddress className="ml-[78px]" />
               </div>
 
               <CoverLine
@@ -136,12 +133,7 @@ export default function CoverSheetModal({ isOpen, order, onClose }) {
               />
             </div>
 
-            <div className="mt-14 border-t border-[#E2E8F0] pt-4 text-center text-[10px] leading-[16px] text-[#64748B]">
-              <p>527 East Rowland Street, Suite 208</p>
-              <p>Covina, CA 91723</p>
-              <p className="text-[#007F96]">DMSCustodian@gmail.com</p>
-              <p>Reference # {coverData.orderId}</p>
-            </div>
+            <SheetFooter orderId={coverData.orderId} />
           </div>
         </div>
       </section>
@@ -156,6 +148,27 @@ function CoverLine({ label, value }) {
       <span className="font-bold text-[#111827]">{label}</span>{" "}
       <span className="font-bold text-[#B45309]">{value}</span>
     </p>
+  );
+}
+
+function DefaultAddress({ className = "" }) {
+  return (
+    <p className={`${className} text-[#B45309]`}>
+      {SHEET_DEFAULT_ADDRESS.line1}
+      <br />
+      {SHEET_DEFAULT_ADDRESS.line2}
+    </p>
+  );
+}
+
+function SheetFooter({ orderId }) {
+  return (
+    <div className="mt-14 border-t border-[#E2E8F0] pt-4 text-center text-[10px] leading-[16px] text-[#64748B]">
+      <p>{SHEET_COMPANY_INFO.addressLine1}</p>
+      <p>{SHEET_COMPANY_INFO.cityStateZip}</p>
+      <p className="text-[#007F96]">{SHEET_COMPANY_INFO.email}</p>
+      <p>Reference # {orderId}</p>
+    </div>
   );
 }
 
