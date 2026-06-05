@@ -5,6 +5,7 @@ import Link from "next/link";
 import CreateInvoiceModal from "@/components/orders/CreateInvoiceModal";
 import CreateXrayInvoiceModal from "@/components/orders/CreateXrayInvoiceModal";
 import CoverSheetModal from "@/components/orders/CoverSheetModal";
+import XrayCoverSheetModal from "@/components/orders/XrayCoverSheetModal";
 
 const ORDERS_PER_PAGE = 6;
 
@@ -348,6 +349,8 @@ export default function OrdersTable() {
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
   const [selectedXrayOrder, setSelectedXrayOrder] = useState(null);
   const [selectedCoverSheetOrder, setSelectedCoverSheetOrder] = useState(null);
+  const [selectedXrayCoverSheetOrder, setSelectedXrayCoverSheetOrder] =
+    useState(null);
 
   const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
 
@@ -453,6 +456,9 @@ export default function OrdersTable() {
                       onCreateInvoice={() => setSelectedInvoiceOrder(order)}
                       onCreateXrayInvoice={() => setSelectedXrayOrder(order)}
                       onCoverSheet={() => setSelectedCoverSheetOrder(order)}
+                      onXrayCoverSheet={() =>
+                        setSelectedXrayCoverSheetOrder(order)
+                      }
                     />
                   </td>
 
@@ -542,6 +548,12 @@ export default function OrdersTable() {
         order={selectedCoverSheetOrder}
         onClose={() => setSelectedCoverSheetOrder(null)}
       />
+
+      <XrayCoverSheetModal
+        isOpen={Boolean(selectedXrayCoverSheetOrder)}
+        order={selectedXrayCoverSheetOrder}
+        onClose={() => setSelectedXrayCoverSheetOrder(null)}
+      />
     </>
   );
 }
@@ -580,6 +592,7 @@ function InvoiceBlock({
   onCreateInvoice,
   onCreateXrayInvoice,
   onCoverSheet,
+  onXrayCoverSheet,
 }) {
   if (invoice.createOnly) {
     return (
@@ -598,6 +611,14 @@ function InvoiceBlock({
           className="block text-[#007F96] underline"
         >
           Cover Sheet
+        </button>
+
+        <button
+          type="button"
+          onClick={onXrayCoverSheet}
+          className="block text-[#007F96] underline"
+        >
+          X-ray Cover Sheet
         </button>
       </div>
     );
@@ -639,6 +660,14 @@ function InvoiceBlock({
         className="block text-[#007F96] underline"
       >
         Cover Sheet
+      </button>
+
+      <button
+        type="button"
+        onClick={onXrayCoverSheet}
+        className="block text-[#007F96] underline"
+      >
+        X-ray Cover Sheet
       </button>
 
       {invoice.showXray && (
