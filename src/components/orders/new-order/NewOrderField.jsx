@@ -39,7 +39,9 @@ export default function NewOrderField({
             hasError
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
               : "border-[#E2E8F0] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
-          } ${disabled ? "cursor-not-allowed bg-[#F8FAFC] text-[#94A3B8]" : ""}`}
+          } ${
+            disabled ? "cursor-not-allowed bg-[#F8FAFC] text-[#94A3B8]" : ""
+          }`}
         />
       ) : options.length > 0 ? (
         <select
@@ -52,6 +54,8 @@ export default function NewOrderField({
             hasError
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
               : "border-[#E2E8F0] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
+          } ${
+            disabled ? "cursor-not-allowed bg-[#F8FAFC] text-[#94A3B8]" : ""
           }`}
         >
           {options.map((option) => (
@@ -75,7 +79,9 @@ export default function NewOrderField({
             hasError
               ? "border-red-500 focus:border-red-500 focus:ring-red-500/10"
               : "border-[#E2E8F0] focus:border-[#0097B2] focus:ring-[#0097B2]/10"
-          } ${disabled ? "cursor-not-allowed bg-[#F8FAFC] text-[#94A3B8]" : ""}`}
+          } ${
+            disabled ? "cursor-not-allowed bg-[#F8FAFC] text-[#94A3B8]" : ""
+          }`}
         />
       )}
 

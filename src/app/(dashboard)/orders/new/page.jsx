@@ -9,6 +9,7 @@ import NewOrderField, {
 } from "@/components/orders/new-order/NewOrderField";
 import PaymentChargeCard from "@/components/orders/new-order/PaymentChargeCard";
 import SubpoenaPreviewContent from "@/components/orders/new-order/SubpoenaPreviewContent";
+import CertificateNoRecordsPanel from "@/components/orders/new-order/CertificateNoRecordsPanel";
 
 import {
   formatMoneyInput,
@@ -87,7 +88,12 @@ const initialFormData = {
   specificRecord: "",
   specificDoctor: "",
   fullAddress: "",
+
   certificateNoRecords: false,
+  cnrReason: "",
+  cnrDelivery: "",
+  cnrDateSent: "",
+  cnrMemo: false,
 
   prepaymentCheck: "",
   prepaymentDate: "",
@@ -174,6 +180,19 @@ export default function NewOrderPage() {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
+    if (name === "certificateNoRecords") {
+      setFormData((prev) => ({
+        ...prev,
+        certificateNoRecords: checked,
+        cnrReason: checked ? prev.cnrReason : "",
+        cnrDelivery: checked ? prev.cnrDelivery : "",
+        cnrDateSent: checked ? prev.cnrDateSent : "",
+        cnrMemo: checked ? prev.cnrMemo : false,
+      }));
+
+      return;
+    }
+
     let nextValue = value;
 
     if (type === "checkbox") {
@@ -234,8 +253,6 @@ export default function NewOrderPage() {
     }
 
     console.log("New order form data:", formData);
-
-    // Later: call create order API here
   };
 
   return (
@@ -246,6 +263,7 @@ export default function NewOrderPage() {
             <h1 className="text-[20px] font-semibold text-[#111827]">
               New Order
             </h1>
+
             <p className="mt-[4px] text-[13px] text-[#64748B]">
               {formData.subpoenaFile
                 ? "Create a new DMS order with attached subpoena"
@@ -492,6 +510,7 @@ function OrderDetailsForm({
         <h3 className="text-[13px] font-semibold text-[#111827]">
           Date Injury
         </h3>
+
         <p className="mt-[2px] text-[11px] italic text-[#64748B]">
           Complete all relevant information
         </p>
@@ -556,6 +575,7 @@ function OrderDetailsForm({
 
       <div>
         <h3 className="text-[13px] font-semibold text-[#111827]">Notes</h3>
+
         <p className="mt-3 text-[12px] font-semibold text-[#64748B]">
           Date By Callback Note
         </p>
@@ -596,6 +616,7 @@ function ServeInfoForm({
 
       <div className="flex items-center justify-between">
         <h3 className="text-[13px] font-semibold text-[#111827]">Company</h3>
+
         <button
           type="button"
           className="text-[11px] font-semibold text-[#0097B2]"
@@ -771,6 +792,7 @@ function ServeInfoForm({
           <p className="mb-[6px] text-[11px] font-semibold text-[#475569]">
             Records
           </p>
+
           <p className="mb-2 text-[10px] italic text-[#94A3B8]">
             Ctrl+Click for multiple selections
           </p>
@@ -854,6 +876,15 @@ function ServeInfoForm({
         checked={formData.certificateNoRecords}
         onChange={onChange}
       />
+
+      {formData.certificateNoRecords && (
+        <CertificateNoRecordsPanel
+          formData={formData}
+          onChange={onChange}
+          onBlur={onBlur}
+          getError={getError}
+        />
+      )}
 
       <button
         type="button"
