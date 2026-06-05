@@ -74,23 +74,77 @@ export default function CompanyInvoiceDetailsPage() {
 
   const [invoices] = useState(invoiceSeed);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [filters, setFilters] = useState({
+    search: "",
+    fromDate: "",
+    toDate: "",
+  });
+
+  const filteredInvoices = useMemo(() => {
+    const searchValue = filters.search.trim().toLowerCase();
+    const fromDate = filters.fromDate ? new Date(filters.fromDate) : null;
+    const toDate = filters.toDate ? new Date(filters.toDate) : null;
+
+    return invoices.filter((invoice) => {
+      const matchesInvoiceId = invoice.invoiceId
+        .toLowerCase()
+        .includes(searchValue);
+
+      const invoiceDate = parseInvoiceDate(invoice.invoiceDate);
+
+      const matchesFromDate = fromDate ? invoiceDate >= fromDate : true;
+      const matchesToDate = toDate ? invoiceDate <= toDate : true;
+
+      return matchesInvoiceId && matchesFromDate && matchesToDate;
+    });
+  }, [invoices, filters]);
 
   const selectedInvoices = useMemo(() => {
     return invoices.filter((invoice) => selectedIds.includes(invoice.id));
   }, [invoices, selectedIds]);
 
+  const filteredInvoiceIds = filteredInvoices.map((invoice) => invoice.id);
+
   const allSelected =
-    invoices.length > 0 && selectedIds.length === invoices.length;
+    filteredInvoices.length > 0 &&
+    filteredInvoiceIds.every((id) => selectedIds.includes(id));
 
   const selectedCount = selectedIds.length;
 
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      search: "",
+      fromDate: "",
+      toDate: "",
+    });
+  };
+
   const handleToggleAll = () => {
     if (allSelected) {
-      setSelectedIds([]);
+      setSelectedIds((prev) =>
+        prev.filter((id) => !filteredInvoiceIds.includes(id))
+      );
       return;
     }
 
-    setSelectedIds(invoices.map((invoice) => invoice.id));
+    setSelectedIds((prev) => {
+      const nextIds = new Set(prev);
+
+      filteredInvoiceIds.forEach((id) => {
+        nextIds.add(id);
+      });
+
+      return Array.from(nextIds);
+    });
   };
 
   const handleToggleInvoice = (invoiceId) => {
@@ -105,9 +159,6 @@ export default function CompanyInvoiceDetailsPage() {
     if (selectedInvoices.length === 0) return;
 
     console.log("Resend selected invoices:", selectedInvoices);
-
-    // Later API flow:
-    // selectedInvoices.forEach((invoice) => resendInvoice(invoice.id));
   };
 
   const handleWriteOffSelected = () => {
@@ -168,8 +219,15 @@ export default function CompanyInvoiceDetailsPage() {
 
         <SummaryCards selectedCount={selectedCount} />
 
+        <InvoiceFilters
+          filters={filters}
+          onChange={handleFilterChange}
+          onReset={handleResetFilters}
+          resultCount={filteredInvoices.length}
+        />
+
         <CompanyInvoiceTable
-          invoices={invoices}
+          invoices={filteredInvoices}
           selectedIds={selectedIds}
           allSelected={allSelected}
           onToggleAll={handleToggleAll}
@@ -178,6 +236,79 @@ export default function CompanyInvoiceDetailsPage() {
         />
       </div>
     </DashboardShell>
+  );
+}
+
+function InvoiceFilters({ filters, onChange, onReset, resultCount }) {
+  return (
+    <section className="rounded-[10px] border border-[#E2E8F0] bg-white px-5 py-4 shadow-sm">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div className="grid min-w-0 flex-1 grid-cols-1 gap-4 md:grid-cols-[minmax(220px,1fr)_180px_180px_auto]">
+          <div>
+            <label className="mb-2 block text-[11px] font-semibold text-[#64748B]">
+              Search Invoice ID
+            </label>
+
+            <div className="relative">
+              <SearchIcon />
+
+              <input
+                type="text"
+                name="search"
+                value={filters.search}
+                onChange={onChange}
+                placeholder="Search by invoice ID..."
+                className="h-[38px] w-full rounded-[6px] border border-[#CBD5E1] bg-white pl-9 pr-3 text-[12px] text-[#111827] outline-none placeholder:text-[#94A3B8] focus:border-[#0097B2] focus:ring-2 focus:ring-[#0097B2]/10"
+              />
+            </div>
+          </div>
+
+          <DateField
+            label="From Date"
+            name="fromDate"
+            value={filters.fromDate}
+            onChange={onChange}
+          />
+
+          <DateField
+            label="To Date"
+            name="toDate"
+            value={filters.toDate}
+            onChange={onChange}
+          />
+
+          <button
+            type="button"
+            onClick={onReset}
+            className="h-[38px] self-end whitespace-nowrap rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-[12px] font-semibold text-[#475569] hover:bg-[#F1F5F9]"
+          >
+            Reset
+          </button>
+        </div>
+
+        <p className="whitespace-nowrap text-[12px] text-[#94A3B8]">
+          Showing {resultCount} invoice{resultCount === 1 ? "" : "s"}
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function DateField({ label, name, value, onChange }) {
+  return (
+    <div>
+      <label className="mb-2 block text-[11px] font-semibold text-[#64748B]">
+        {label}
+      </label>
+
+      <input
+        type="date"
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="h-[38px] w-full rounded-[6px] border border-[#CBD5E1] bg-white px-3 text-[12px] text-[#111827] outline-none focus:border-[#0097B2] focus:ring-2 focus:ring-[#0097B2]/10"
+      />
+    </div>
   );
 }
 
@@ -235,7 +366,7 @@ function CompanyInvoiceTable({
 }) {
   return (
     <section className="min-h-0 flex-1 overflow-hidden rounded-[10px] border border-[#E2E8F0] bg-white shadow-sm">
-      <div className="h-full max-h-[calc(100vh-290px)] overflow-auto">
+      <div className="h-full max-h-[calc(100vh-370px)] overflow-auto">
         <table className="w-full min-w-[950px] border-collapse">
           <thead className="sticky top-0 z-10 bg-[#F8FAFC]">
             <tr className="border-b border-[#E2E8F0] text-left text-[11px] font-semibold text-[#475569]">
@@ -358,6 +489,11 @@ function StatusBadge({ status }) {
   );
 }
 
+function parseInvoiceDate(dateString) {
+  const [month, day, year] = dateString.split("/");
+  return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
 function ArrowLeftIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -367,6 +503,32 @@ function ArrowLeftIcon() {
         strokeWidth="1.9"
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg
+      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+    >
+      <circle
+        cx="11"
+        cy="11"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="m20 20-3.5-3.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
       />
     </svg>
   );
