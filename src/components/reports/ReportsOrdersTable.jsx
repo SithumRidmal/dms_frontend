@@ -1,10 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CreateInvoiceModal from "@/components/orders/CreateInvoiceModal";
 
-export default function ReportsOrdersTable({ orders, minimumColumns }) {
+const allColumns = [
+  { key: "select", label: "", width: 34, minimum: true },
+  { key: "orderNo", label: "Order #", width: 100, minimum: true },
+  { key: "status", label: "Status", width: 120, minimum: true },
+  { key: "invoice", label: "Invoice", width: 120, minimum: true },
+  { key: "subpoenaDate", label: "Subpoena Date", width: 105 },
+  { key: "dateServed", label: "Date Served", width: 105 },
+  { key: "applicant", label: "Applicant", width: 120, minimum: true },
+  { key: "caseNumber", label: "Case Number", width: 120, minimum: true },
+  { key: "dob", label: "DOB", width: 85 },
+  { key: "ssn", label: "SSN", width: 100 },
+  { key: "provider", label: "Provider on Subpoena", width: 170 },
+  { key: "recordsRequested", label: "Records Requested", width: 175 },
+  { key: "doctor", label: "Doctor", width: 140 },
+  { key: "address", label: "Address", width: 230 },
+  { key: "rush", label: "Rush", width: 72, minimum: true },
+];
+
+export default function ReportsOrdersTable({
+  orders,
+  minimumColumns,
+  recordsPerPage = 25,
+}) {
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState(null);
+  const [collapsedColumns, setCollapsedColumns] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const visibleColumns = useMemo(() => {
+    return allColumns.filter((column) => {
+      const allowedByMinimum = minimumColumns ? column.minimum : true;
+      const notCollapsed = !collapsedColumns.includes(column.key);
+
+      return allowedByMinimum && notCollapsed;
+    });
+  }, [minimumColumns, collapsedColumns]);
+
+  const restorableColumns = useMemo(() => {
+    return allColumns.filter((column) => collapsedColumns.includes(column.key));
+  }, [collapsedColumns]);
+
+  const tableMinWidth = useMemo(() => {
+    return visibleColumns.reduce((total, column) => total + column.width, 0);
+  }, [visibleColumns]);
+
+  const totalPages = Math.max(1, Math.ceil(orders.length / recordsPerPage));
+
+  const paginatedOrders = useMemo(() => {
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    return orders.slice(startIndex, startIndex + recordsPerPage);
+  }, [orders, currentPage, recordsPerPage]);
+
+  const startRecord = orders.length === 0 ? 0 : (currentPage - 1) * recordsPerPage + 1;
+  const endRecord = Math.min(currentPage * recordsPerPage, orders.length);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orders]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const isVisible = (key) => visibleColumns.some((column) => column.key === key);
+
+  const collapseColumn = (key) => {
+    setCollapsedColumns((prev) => {
+      if (prev.includes(key)) return prev;
+      return [...prev, key];
+    });
+  };
+
+  const restoreColumn = (key) => {
+    setCollapsedColumns((prev) => prev.filter((columnKey) => columnKey !== key));
+  };
+
+  const restoreAllColumns = () => {
+    setCollapsedColumns([]);
+  };
 
   const handleOpenCreateInvoice = (order) => {
     setSelectedInvoiceOrder({
@@ -19,121 +97,277 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
 
   return (
     <>
-      <section className="min-h-0 flex-1 overflow-hidden rounded-[10px] border border-[#E2E8F0] bg-white shadow-sm">
-        <div className="h-full max-h-[calc(100vh-225px)] overflow-auto">
+      <section className="min-h-0 flex-1 overflow-hidden bg-white">
+        {restorableColumns.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-b border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2">
+            <span className="text-[11px] font-semibold text-[#64748B]">
+              Hidden columns:
+            </span>
+
+            {restorableColumns.map((column) => (
+              <button
+                key={column.key}
+                type="button"
+                onClick={() => restoreColumn(column.key)}
+                className="inline-flex h-[23px] items-center rounded-[4px] border border-[#CBD5E1] bg-white px-2 text-[10px] font-semibold text-[#334155] hover:bg-[#E6F7FA] hover:text-[#007F96]"
+              >
+                + {column.label || "Select"}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              onClick={restoreAllColumns}
+              className="ml-1 text-[10px] font-semibold text-[#007F96] hover:underline"
+            >
+              Restore all
+            </button>
+          </div>
+        )}
+
+        <div className="h-full max-h-[calc(100vh-240px)] overflow-auto">
           <table
-            className={`w-full border-collapse ${
-              minimumColumns ? "min-w-[1050px]" : "min-w-[1880px]"
-            }`}
+            className="w-full border-collapse text-[10px]"
+            style={{ minWidth: `${Math.max(tableMinWidth, 900)}px` }}
           >
             <thead className="sticky top-0 z-20 bg-white">
-              <tr className="border-b border-[#E2E8F0] text-left text-[11px] font-semibold text-[#475569]">
-                <th className="w-[40px] px-4 py-3">
-                  <input type="checkbox" className="h-[13px] w-[13px]" />
-                </th>
-
-                <SortableHeader label="Order #" />
-                <th className="w-[130px] px-4 py-3">Status</th>
-                <th className="w-[120px] px-4 py-3">Invoice</th>
-
-                {!minimumColumns && (
-                  <>
-                    <SortableHeader label="Subpoena Date" />
-                    <SortableHeader label="Date Served" />
-                    <SortableHeader label="Applicant" />
-                    <SortableHeader label="Case Number" />
-                    <SortableHeader label="DOB" />
-                    <SortableHeader label="SSN" />
-                    <th className="w-[220px] px-4 py-3">
-                      Provider on Subpoena
-                    </th>
-                    <th className="w-[185px] px-4 py-3">Records Requested</th>
-                    <SortableHeader label="Doctor" />
-                    <th className="w-[230px] px-4 py-3">Address</th>
-                  </>
+              <tr className="border-b border-[#CBD5E1] text-left text-[10px] font-semibold text-[#111827]">
+                {isVisible("select") && (
+                  <th
+                    className="border-r border-[#E2E8F0] px-2 py-2"
+                    style={{ width: 34 }}
+                  >
+                    <input type="checkbox" className="h-[11px] w-[11px]" />
+                  </th>
                 )}
 
-                <th className="sticky right-0 z-30 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-3 text-center shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)]">
-                  Rush
-                </th>
+                {isVisible("orderNo") && (
+                  <ReportHeader
+                    label="Order #"
+                    width={100}
+                    onCollapse={() => collapseColumn("orderNo")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("status") && (
+                  <ReportHeader
+                    label="Status"
+                    width={120}
+                    onCollapse={() => collapseColumn("status")}
+                  />
+                )}
+
+                {isVisible("invoice") && (
+                  <ReportHeader
+                    label="Invoice"
+                    width={120}
+                    onCollapse={() => collapseColumn("invoice")}
+                  />
+                )}
+
+                {isVisible("subpoenaDate") && (
+                  <ReportHeader
+                    label="Subpoena Date"
+                    width={105}
+                    onCollapse={() => collapseColumn("subpoenaDate")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("dateServed") && (
+                  <ReportHeader
+                    label="Date Served"
+                    width={105}
+                    onCollapse={() => collapseColumn("dateServed")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("applicant") && (
+                  <ReportHeader
+                    label="Applicant"
+                    width={120}
+                    onCollapse={() => collapseColumn("applicant")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("caseNumber") && (
+                  <ReportHeader
+                    label="Case Number"
+                    width={120}
+                    onCollapse={() => collapseColumn("caseNumber")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("dob") && (
+                  <ReportHeader
+                    label="DOB"
+                    width={85}
+                    onCollapse={() => collapseColumn("dob")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("ssn") && (
+                  <ReportHeader
+                    label="SSN"
+                    width={100}
+                    onCollapse={() => collapseColumn("ssn")}
+                  />
+                )}
+
+                {isVisible("provider") && (
+                  <ReportHeader
+                    label="Provider on Subpoena"
+                    width={170}
+                    onCollapse={() => collapseColumn("provider")}
+                  />
+                )}
+
+                {isVisible("recordsRequested") && (
+                  <ReportHeader
+                    label="Records Requested"
+                    width={175}
+                    onCollapse={() => collapseColumn("recordsRequested")}
+                  />
+                )}
+
+                {isVisible("doctor") && (
+                  <ReportHeader
+                    label="Doctor"
+                    width={140}
+                    onCollapse={() => collapseColumn("doctor")}
+                    sortable
+                  />
+                )}
+
+                {isVisible("address") && (
+                  <ReportHeader
+                    label="Address"
+                    width={230}
+                    onCollapse={() => collapseColumn("address")}
+                  />
+                )}
+
+                {isVisible("rush") && (
+                  <ReportHeader
+                    label="Rush"
+                    width={72}
+                    onCollapse={() => collapseColumn("rush")}
+                    center
+                  />
+                )}
               </tr>
             </thead>
 
             <tbody>
-              {orders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="group border-b border-[#F1F5F9] last:border-b-0 hover:bg-[#F8FBFC]"
-                >
-                  <td className="px-4 py-6 align-middle">
-                    <input type="checkbox" className="h-[13px] w-[13px]" />
-                  </td>
+              {paginatedOrders.map((order) => {
+                const rushLevel = calculateRushLevel(order.subpoenaDate);
 
-                  <td className="px-4 py-6 align-middle">
-                    <button
-                      type="button"
-                      className="text-left text-[12px] font-semibold text-[#007F96] hover:underline"
-                    >
-                      {order.orderNo}
-                    </button>
-
-                    <p className="mt-2 text-[10px] text-[#94A3B8]">
-                      {order.subNo}
-                    </p>
-                  </td>
-
-                  <td className="px-4 py-6 align-top">
-                    <StatusBlock status={order.status} />
-                  </td>
-
-                  <td className="px-4 py-6 align-middle">
-                    {order.invoiced ? (
-                      <span className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#059669]">
-                        <CheckIcon />
-                        Invoiced
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenCreateInvoice(order)}
-                        className="inline-flex items-center gap-1 whitespace-nowrap text-[10px] font-semibold text-[#007F96] hover:underline"
-                      >
-                        <DocumentIcon />
-                        Create Invoice
-                      </button>
+                return (
+                  <tr
+                    key={order.id}
+                    className="border-b border-[#E2E8F0] odd:bg-white even:bg-[#F8FBFC] hover:bg-[#EFF8FA]"
+                  >
+                    {isVisible("select") && (
+                      <td className="border-r border-[#E2E8F0] px-2 py-2 align-top">
+                        <input type="checkbox" className="h-[11px] w-[11px]" />
+                      </td>
                     )}
-                  </td>
 
-                  {!minimumColumns && (
-                    <>
-                      <TableText>{order.subpoenaDate}</TableText>
-                      <TableText>{order.dateServed}</TableText>
-                      <TableText>{order.applicant}</TableText>
-                      <TableText>{order.caseNumber}</TableText>
-                      <TableText>{order.dob}</TableText>
-                      <TableText>{order.ssn}</TableText>
-                      <TableText>{order.provider}</TableText>
-                      <TableText>{order.recordsRequested}</TableText>
-                      <TableText>{order.doctor}</TableText>
+                    {isVisible("orderNo") && (
+                      <td className="border-r border-[#E2E8F0] px-2 py-2 align-top">
+                        <button
+                          type="button"
+                          className="block text-left text-[10px] font-bold leading-[13px] text-[#007F96] hover:underline"
+                        >
+                          {order.orderNo}
+                        </button>
 
-                      <td className="px-4 py-6 align-middle text-[11px] leading-[16px] text-[#475569]">
-                        <div className="max-w-[190px] break-words">
+                        <p className="mt-[2px] text-[9px] leading-[12px] text-[#64748B]">
+                          {order.subNo}
+                        </p>
+
+                        <button
+                          type="button"
+                          className="mt-[2px] block text-left text-[9px] font-semibold leading-[12px] text-[#111827] hover:underline"
+                        >
+                          Review Subpoena
+                        </button>
+                      </td>
+                    )}
+
+                    {isVisible("status") && (
+                      <td className="border-r border-[#E2E8F0] px-2 py-2 align-top">
+                        <StatusBlock />
+                      </td>
+                    )}
+
+                    {isVisible("invoice") && (
+                      <td className="border-r border-[#E2E8F0] px-2 py-2 align-top">
+                        <InvoiceBlock
+                          order={order}
+                          onCreateInvoice={() => handleOpenCreateInvoice(order)}
+                        />
+                      </td>
+                    )}
+
+                    {isVisible("subpoenaDate") && (
+                      <ReportCell>{formatShortDate(order.subpoenaDate)}</ReportCell>
+                    )}
+
+                    {isVisible("dateServed") && (
+                      <ReportCell>{formatShortDate(order.dateServed)}</ReportCell>
+                    )}
+
+                    {isVisible("applicant") && (
+                      <ReportCell bold>{order.applicant}</ReportCell>
+                    )}
+
+                    {isVisible("caseNumber") && (
+                      <ReportCell>{order.caseNumber}</ReportCell>
+                    )}
+
+                    {isVisible("dob") && (
+                      <ReportCell danger>{formatDob(order.dob)}</ReportCell>
+                    )}
+
+                    {isVisible("ssn") && <ReportCell>{order.ssn}</ReportCell>}
+
+                    {isVisible("provider") && (
+                      <ReportCell>{order.provider}</ReportCell>
+                    )}
+
+                    {isVisible("recordsRequested") && (
+                      <ReportCell>{order.recordsRequested}</ReportCell>
+                    )}
+
+                    {isVisible("doctor") && <ReportCell>{order.doctor}</ReportCell>}
+
+                    {isVisible("address") && (
+                      <td className="border-r border-[#E2E8F0] px-2 py-2 align-top text-[10px] leading-[14px] text-[#111827]">
+                        <div className="max-w-[220px] break-words">
                           {order.address}
                         </div>
                       </td>
-                    </>
-                  )}
+                    )}
 
-                  <td className="sticky right-0 z-10 w-[126px] min-w-[126px] border-l border-[#E2E8F0] bg-white px-4 py-6 text-center align-middle shadow-[-10px_0_14px_-14px_rgba(15,23,42,0.45)] group-hover:bg-[#F8FBFC]">
-                    <RushBadge rush={order.rush} />
-                  </td>
-                </tr>
-              ))}
+                    {isVisible("rush") && (
+                      <td className="px-2 py-2 text-center align-middle">
+                        <RushBadge rush={rushLevel} />
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
 
               {orders.length === 0 && (
                 <tr>
                   <td
-                    colSpan={minimumColumns ? 5 : 15}
+                    colSpan={visibleColumns.length}
                     className="px-5 py-14 text-center text-[13px] text-[#94A3B8]"
                   >
                     No report orders found.
@@ -143,6 +377,15 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
             </tbody>
           </table>
         </div>
+
+        <ReportsPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          startRecord={startRecord}
+          endRecord={endRecord}
+          totalRecords={orders.length}
+          onPageChange={setCurrentPage}
+        />
       </section>
 
       <CreateInvoiceModal
@@ -154,25 +397,180 @@ export default function ReportsOrdersTable({ orders, minimumColumns }) {
   );
 }
 
-function RushBadge({ rush }) {
-  if (!rush || rush === "–" || rush === "-") {
+function ReportsPagination({
+  currentPage,
+  totalPages,
+  startRecord,
+  endRecord,
+  totalRecords,
+  onPageChange,
+}) {
+  const pages = Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-[#E2E8F0] bg-white px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-[11px] text-[#475569]">
+        Showing {startRecord}-{endRecord} of {totalRecords} records
+      </p>
+
+      <div className="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+          className="inline-flex h-[34px] min-w-[82px] items-center justify-center rounded-[6px] border border-[#E2E8F0] bg-white px-3 text-[15px] font-medium text-[#64748B] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ‹ Prev
+        </button>
+
+        {pages.map((page) => (
+          <button
+            key={page}
+            type="button"
+            onClick={() => onPageChange(page)}
+            className={`inline-flex h-[34px] min-w-[42px] items-center justify-center rounded-[6px] border px-3 text-[15px] font-medium ${
+              currentPage === page
+                ? "border-[#111827] bg-[#111827] text-white"
+                : "border-[#E2E8F0] bg-white text-[#111827] hover:bg-[#F8FAFC]"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          type="button"
+          disabled={currentPage === totalPages}
+          onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+          className="inline-flex h-[34px] min-w-[82px] items-center justify-center rounded-[6px] border border-[#E2E8F0] bg-white px-3 text-[15px] font-medium text-[#111827] hover:bg-[#F8FAFC] disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Next ›
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ReportHeader({
+  label,
+  width,
+  onCollapse,
+  sortable = false,
+  center = false,
+}) {
+  return (
+    <th
+      className={`border-r border-[#E2E8F0] px-2 py-2 ${
+        center ? "text-center" : "text-left"
+      }`}
+      style={{ width }}
+    >
+      <div
+        className={`flex items-center gap-1 ${
+          center ? "justify-center" : "justify-between"
+        }`}
+      >
+        <span className="truncate">
+          {label} {sortable && <span className="text-[#94A3B8]">↕</span>}
+        </span>
+
+        <button
+          type="button"
+          onClick={onCollapse}
+          title={`Collapse ${label}`}
+          className="flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] text-[10px] text-[#94A3B8] hover:bg-[#E6F7FA] hover:text-[#007F96]"
+        >
+          ‹
+        </button>
+      </div>
+    </th>
+  );
+}
+
+function InvoiceBlock({ order, onCreateInvoice }) {
+  if (!order.invoiced) {
     return (
-      <span className="inline-flex h-[28px] min-w-[72px] items-center justify-center rounded-[6px] px-3 text-[11px] font-semibold leading-none text-[#94A3B8]">
-        –
-      </span>
+      <button
+        type="button"
+        onClick={onCreateInvoice}
+        className="text-[9px] font-semibold leading-[12px] text-[#111827] hover:underline"
+      >
+        Create Invoice
+      </button>
     );
   }
 
+  return (
+    <div className="space-y-[2px]">
+      <p className="text-[9px] font-semibold leading-[12px] text-[#111827]">
+        Invoiced
+      </p>
+
+      <p className="text-[9px] leading-[12px] text-[#111827]">
+        {order.invoiceAmount}
+      </p>
+
+      {order.status === "Ready" && (
+        <p className="text-[9px] font-semibold leading-[12px] text-[#059669]">
+          Paid
+        </p>
+      )}
+
+      {order.status === "Active" && (
+        <button
+          type="button"
+          className="text-[9px] font-semibold leading-[12px] text-red-500 hover:underline"
+        >
+          Write Off
+        </button>
+      )}
+    </div>
+  );
+}
+
+function StatusBlock() {
+  return (
+    <div className="space-y-[2px] text-[9px] font-bold leading-[12px] text-[#111827]">
+      <button type="button" className="block text-left hover:underline">
+        Scan Records
+      </button>
+      <button type="button" className="block text-left hover:underline">
+        Serve Payment
+      </button>
+      <button type="button" className="block text-left hover:underline">
+        Custodian Payment
+      </button>
+    </div>
+  );
+}
+
+function ReportCell({ children, bold = false, danger = false }) {
+  return (
+    <td
+      className={`border-r border-[#E2E8F0] px-2 py-2 align-top text-[10px] leading-[14px] ${
+        danger ? "text-[#EA580C]" : "text-[#111827]"
+      } ${bold ? "font-semibold" : ""}`}
+    >
+      {children}
+    </td>
+  );
+}
+
+function RushBadge({ rush }) {
+  if (!rush) {
+    return <span className="text-[10px] text-[#94A3B8]">–</span>;
+  }
+
   const styles = {
-    "Rush 1": "border-[#FDBA74] bg-[#FFF7ED] text-[#EA580C]",
-    "Rush 2": "border-[#FDBA74] bg-[#FFF7ED] text-[#EA580C]",
-    "Rush 3": "border-[#FCA5A5] bg-[#FEF2F2] text-[#DC2626]",
+    "Rush 1": "border-[#FDE68A] bg-[#FEF3C7] text-[#B45309]",
+    "Rush 2": "border-[#FDBA74] bg-[#FFEDD5] text-[#EA580C]",
+    "Rush 3": "border-[#FCA5A5] bg-[#FEE2E2] text-[#DC2626]",
   };
 
   return (
     <span
-      className={`inline-flex h-[28px] min-w-[78px] items-center justify-center whitespace-nowrap rounded-[6px] border px-4 text-[11px] font-semibold leading-none ${
-        styles[rush] || styles["Rush 1"]
+      className={`inline-flex h-[20px] min-w-[46px] items-center justify-center rounded-[3px] border px-2 text-[9px] font-bold leading-none ${
+        styles[rush]
       }`}
     >
       {rush}
@@ -180,107 +578,37 @@ function RushBadge({ rush }) {
   );
 }
 
-function StatusBlock({ status }) {
-  return (
-    <div>
-      <StatusBadge status={status} />
+function calculateRushLevel(dateValue) {
+  if (!dateValue) return null;
 
-      <div className="mt-3 space-y-2">
-        <StatusAction icon={<CircleIcon />} label="Scan Records" muted />
-        <StatusAction icon={<DocumentIcon />} label="Review Subpoena" />
-        <StatusAction icon={<DocumentIcon />} label="Review Records" />
-        <StatusAction icon={<CircleIcon />} label="Serve Payment" muted />
-        <StatusAction icon={<PaymentIcon />} label="Custodian Payment" muted />
-      </div>
-    </div>
-  );
+  const orderDate = new Date(`${dateValue}T00:00:00`);
+  if (Number.isNaN(orderDate.getTime())) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffInMs = today.getTime() - orderDate.getTime();
+  const daysOld = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (daysOld < 0) return null;
+  if (daysOld <= 7) return "Rush 3";
+  if (daysOld <= 21) return "Rush 2";
+
+  return "Rush 1";
 }
 
-function StatusBadge({ status }) {
-  if (status === "Ready") {
-    return (
-      <span className="inline-flex h-[24px] items-center rounded-full bg-[#E6F7FA] px-3 text-[10px] font-semibold text-[#007F96]">
-        Ready
-      </span>
-    );
-  }
+function formatShortDate(dateValue) {
+  if (!dateValue) return "";
 
-  return (
-    <span className="inline-flex h-[24px] items-center rounded-full bg-[#ECFDF5] px-3 text-[10px] font-semibold text-[#059669]">
-      Active
-    </span>
-  );
+  const [year, month, day] = dateValue.split("-");
+  return `${month}/${day}/${year.slice(2)}`;
 }
 
-function StatusAction({ icon, label, muted = false }) {
-  return (
-    <button
-      type="button"
-      className={`flex items-center gap-1 text-left text-[10px] font-semibold ${
-        muted ? "text-[#64748B]" : "text-[#0097B2]"
-      } hover:underline`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
+function formatDob(dateValue) {
+  if (!dateValue) return "";
 
-function TableText({ children }) {
-  return (
-    <td className="px-4 py-6 align-middle text-[11px] leading-[16px] text-[#475569]">
-      {children}
-    </td>
-  );
-}
+  const parts = dateValue.split("/");
+  if (parts.length !== 3) return dateValue;
 
-function SortableHeader({ label }) {
-  return (
-    <th className="w-[135px] px-4 py-3">
-      <span className="inline-flex items-center gap-1 whitespace-nowrap">
-        {label}
-        <span className="text-[9px] text-[#94A3B8]">↕</span>
-      </span>
-    </th>
-  );
-}
-
-function CircleIcon() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function DocumentIcon() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
-      <path d="M7 3h7l5 5v13H7V3Z" stroke="currentColor" strokeWidth="2" />
-      <path d="M14 3v5h5" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function PaymentIcon() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
-      <path d="M4 7h16v10H4V7Z" stroke="currentColor" strokeWidth="2" />
-      <path d="M4 10h16" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
-      <path
-        d="m5 12 4 4L19 6"
-        stroke="currentColor"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
+  return `${parts[0]}/${parts[1]}/${parts[2].slice(-4)}`;
 }
