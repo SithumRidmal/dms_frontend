@@ -18,8 +18,9 @@ const initialFormData = {
   xrayFee: "0.00",
   mileage: "0.00",
   parking: "0.00",
-  pages: "0",
   other: "0.00",
+  pages: "0",
+  perPageAmount: "0.00",
   notes: "",
   sendOrderDetails: false,
   rushOrder: false,
@@ -54,6 +55,10 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
     setErrors({});
   }, [isOpen, order]);
 
+  const pagesAmount = useMemo(() => {
+    return toNumber(formData.pages) * toNumber(formData.perPageAmount);
+  }, [formData.pages, formData.perPageAmount]);
+
   const totalAmount = useMemo(() => {
     return (
       toNumber(formData.servedAmount) +
@@ -62,9 +67,10 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
       toNumber(formData.xrayFee) +
       toNumber(formData.mileage) +
       toNumber(formData.parking) +
-      toNumber(formData.other)
+      toNumber(formData.other) +
+      pagesAmount
     );
-  }, [formData]);
+  }, [formData, pagesAmount]);
 
   if (!mounted || !isOpen || !order) return null;
 
@@ -101,6 +107,21 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
     }));
   };
 
+  const handlePagesChange = (e) => {
+    const { value } = e.target;
+    const cleanValue = value.replace(/\D/g, "");
+
+    setFormData((prev) => ({
+      ...prev,
+      pages: cleanValue,
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      pages: "",
+    }));
+  };
+
   const handleSubmit = () => {
     const validationErrors = validateInvoiceForm(formData);
     setErrors(validationErrors);
@@ -111,6 +132,7 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
       type: activeType,
       order,
       formData,
+      pagesAmount,
       totalAmount,
     });
 
@@ -120,7 +142,7 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 px-4 py-6 backdrop-blur-[2px]">
       <section className="flex max-h-[calc(100vh-42px)] w-full max-w-[700px] flex-col overflow-hidden rounded-[10px] bg-white shadow-2xl">
-        <div className="relative shrink-0 bg-[#0B91A6] px-5 py-4 text-white">
+        <div className="relative shrink-0 bg-gradient-to-r from-[#008AA3] via-[#0A96AA] to-[#56AFC0] px-5 py-4 text-white">
           <button
             type="button"
             onClick={onClose}
@@ -262,14 +284,24 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
               />
             </div>
 
-            <div className="mt-3 max-w-[160px]">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <NumberField
                 label="Pages"
                 name="pages"
                 value={formData.pages}
-                onChange={handleChange}
+                onChange={handlePagesChange}
                 error={errors.pages}
               />
+
+              <MoneyField
+                label="Per Page Amount"
+                name="perPageAmount"
+                value={formData.perPageAmount}
+                onChange={handleMoneyChange}
+                error={errors.perPageAmount}
+              />
+
+              <ReadOnlyMoneyField label="Pages Amount" value={pagesAmount} />
             </div>
 
             <div className="mt-3">
@@ -322,6 +354,7 @@ export default function CreateInvoiceModal({ isOpen, order, onClose }) {
                 label="Custodian Fee"
                 value={formatMoney(toNumber(formData.custodianFee))}
               />
+              <SummaryRow label="Pages" value={formatMoney(pagesAmount)} />
             </div>
 
             <div className="mt-5 rounded-[8px] border border-[#E2E8F0] bg-white px-3 py-3">
@@ -439,6 +472,29 @@ function MoneyField({ label, name, value, onChange, error = "" }) {
   );
 }
 
+function ReadOnlyMoneyField({ label, value }) {
+  return (
+    <div>
+      <label className="mb-2 block text-[11px] font-semibold text-[#475569]">
+        {label}
+      </label>
+
+      <div className="relative">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-[#94A3B8]">
+          $
+        </span>
+
+        <input
+          type="text"
+          value={Number(value).toFixed(2)}
+          readOnly
+          className="h-[34px] w-full cursor-not-allowed rounded-[6px] border border-[#E2E8F0] bg-[#F8FAFC] pl-7 pr-3 text-[12px] font-semibold text-[#007F96] outline-none"
+        />
+      </div>
+    </div>
+  );
+}
+
 function NumberField({ label, name, value, onChange, error = "" }) {
   return (
     <div>
@@ -447,8 +503,8 @@ function NumberField({ label, name, value, onChange, error = "" }) {
       </label>
 
       <input
-        type="number"
-        min="0"
+        type="text"
+        inputMode="numeric"
         name={name}
         value={value}
         onChange={onChange}
@@ -503,6 +559,7 @@ function validateInvoiceForm(data) {
     "mileage",
     "parking",
     "other",
+    "perPageAmount",
   ];
 
   moneyFields.forEach((field) => {
