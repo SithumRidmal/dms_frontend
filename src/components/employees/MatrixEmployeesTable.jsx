@@ -2,6 +2,127 @@
 
 import { useState } from "react";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import ActivityLogModal from "@/components/ui/ActivityLogModal";
+
+const employeeLogsSeed = {
+  1: [
+    {
+      date: "06/04/26",
+      by: "Matthew Perera",
+      callback: "",
+      note: "Login successful from dashboard portal.",
+    },
+    {
+      date: "06/04/26",
+      by: "Matthew Perera",
+      callback: "",
+      note: "Employee profile Updated by admin.",
+    },
+    {
+      date: "06/03/26",
+      by: "System",
+      callback: "",
+      note: "Password reset email sent.",
+    },
+    {
+      date: "06/02/26",
+      by: "Matthew Perera",
+      callback: "",
+      note: "Role Updated from Processor to Manager.",
+    },
+    {
+      date: "06/01/26",
+      by: "System",
+      callback: "",
+      note: "Login failed attempt recorded.",
+    },
+    {
+      date: "06/01/26",
+      by: "Matthew Perera",
+      callback: "",
+      note: "Employee account created.",
+    },
+  ],
+  2: [
+    {
+      date: "06/04/26",
+      by: "Sarah Chen",
+      callback: "",
+      note: "Login successful from office device.",
+    },
+    {
+      date: "06/03/26",
+      by: "Sarah Chen",
+      callback: "",
+      note: "Processed invoice records.",
+    },
+    {
+      date: "06/02/26",
+      by: "Matthew Perera",
+      callback: "",
+      note: "Employee schedule Updated.",
+    },
+    {
+      date: "06/01/26",
+      by: "System",
+      callback: "",
+      note: "Password changed successfully.",
+    },
+  ],
+  3: [
+    {
+      date: "06/04/26",
+      by: "John Doe",
+      callback: "",
+      note: "Login successful.",
+    },
+    {
+      date: "06/03/26",
+      by: "Matthew Perera",
+      callback: "",
+      note: "Employee permission Updated.",
+    },
+    {
+      date: "06/02/26",
+      by: "System",
+      callback: "",
+      note: "Security check completed.",
+    },
+  ],
+};
+
+function getEmployeeLogs(employee) {
+  if (!employee) return [];
+
+  return (
+    employeeLogsSeed[employee.id] || [
+      {
+        date: "06/04/26",
+        by: "Matthew Perera",
+        callback: "",
+        note: `${employee.name} Login successful.`,
+      },
+      {
+        date: "06/03/26",
+        by: "System",
+        callback: "",
+        note: `${employee.name} profile Updated automatically.`,
+      },
+      {
+        date: "06/02/26",
+        by: "Matthew Perera",
+        callback: "",
+        note: `${employee.name} employee record reviewed.`,
+      },
+      {
+        date: "06/01/26",
+        by: "System",
+        callback: "",
+        note: `${employee.name} account activity synced.`,
+      },
+    ]
+  );
+}
 
 export default function MatrixEmployeesTable({
   employees,
@@ -13,6 +134,8 @@ export default function MatrixEmployeesTable({
     action: null,
     employee: null,
   });
+
+  const [selectedLogEmployee, setSelectedLogEmployee] = useState(null);
 
   const openTerminateModal = (employee) => {
     setConfirmModal({
@@ -96,9 +219,10 @@ export default function MatrixEmployeesTable({
                   <td className="px-5 py-4">
                     <button
                       type="button"
+                      onClick={() => setSelectedLogEmployee(employee)}
                       className={`text-left text-[12px] font-semibold ${
                         employee.terminated
-                          ? "text-red-500 line-through"
+                          ? "text-red-500 line-through hover:underline"
                           : "text-[#007F96] hover:underline"
                       }`}
                     >
@@ -181,6 +305,14 @@ export default function MatrixEmployeesTable({
         cancelLabel="Cancel"
         onCancel={closeConfirmModal}
         onConfirm={handleConfirmAction}
+      />
+
+      <ActivityLogModal
+        isOpen={Boolean(selectedLogEmployee)}
+        title="Employee Activity Log"
+        reference={selectedLogEmployee?.name}
+        logs={getEmployeeLogs(selectedLogEmployee)}
+        onClose={() => setSelectedLogEmployee(null)}
       />
     </>
   );
