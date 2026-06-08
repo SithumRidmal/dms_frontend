@@ -7,8 +7,114 @@ import CreateXrayInvoiceModal from "@/components/orders/CreateXrayInvoiceModal";
 import CoverSheetModal from "@/components/orders/CoverSheetModal";
 import XrayCoverSheetModal from "@/components/orders/XrayCoverSheetModal";
 import CertificateNoRecordsModal from "@/components/orders/CertificateNoRecordsModal";
+import OrderActivityLogModal from "@/components/orders/OrderActivityLogModal";
 
 const ORDERS_PER_PAGE = 6;
+
+const orderActivityLogs = [
+  {
+    date: "06/04/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Letter CNR Letter emailed to devindiabeykoon@gmail.com, sarasinisala@gmail.com",
+  },
+  {
+    date: "06/04/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Per Elizabeth this is a CNR",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Invoice Updated by Matthew Perera on 06/01/2026 02:35AM",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Records Emailed to",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Invoice Updated by Matthew Perera on 06/01/2026 02:27AM",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Invoice Updated by Matthew Perera on 06/01/2026 02:27AM",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Previous Check Entered...",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "XRay Invoice emailed to devindiabeykoon@gmail.com",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Records Sent to devindiabeykoon@gmail.com",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Records Sent to devindiabeykoon@gmail.com",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Matthew Perera updated order on 06/01/2026 02:15AM",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Matthew Perera updated order on 06/01/2026 02:11AM",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Letter CNR Letter emailed to devindiabeykoon@gmail.com",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Letter Copy Service Letter emailed to devindiabeykoon@gmail.com",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Per Elizabeth this is a CNR",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "Records printed and invoices sent out",
+  },
+  {
+    date: "06/01/26",
+    by: "Matthew Perera",
+    callback: "",
+    note: "XRay Invoice emailed to devindiabeykoon@gmail.com",
+  },
+];
 
 const orders = [
   {
@@ -354,6 +460,7 @@ export default function OrdersTable() {
   const [selectedXrayCoverSheetOrder, setSelectedXrayCoverSheetOrder] =
     useState(null);
   const [selectedCnrOrder, setSelectedCnrOrder] = useState(null);
+  const [selectedLogOrder, setSelectedLogOrder] = useState(null);
 
   const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
 
@@ -421,6 +528,14 @@ export default function OrdersTable() {
                         Note
                       </button>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLogOrder(order)}
+                      className="mt-1 block text-left text-[10px] font-medium text-[#007F96] underline"
+                    >
+                      Order Log
+                    </button>
 
                     {order.subpoena && (
                       <p className="mt-1 text-[10px] font-semibold text-[#059669]">
@@ -565,6 +680,13 @@ export default function OrdersTable() {
         isOpen={Boolean(selectedCnrOrder)}
         order={selectedCnrOrder}
         onClose={() => setSelectedCnrOrder(null)}
+      />
+
+      <OrderActivityLogModal
+        isOpen={Boolean(selectedLogOrder)}
+        order={selectedLogOrder}
+        logs={orderActivityLogs}
+        onClose={() => setSelectedLogOrder(null)}
       />
     </>
   );
